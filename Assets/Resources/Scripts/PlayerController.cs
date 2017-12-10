@@ -37,6 +37,14 @@ public class PlayerController : MonoBehaviour {
             }
         }
         player.transform.position = Vector3.MoveTowards(player.transform.position, playerPosRounded, Time.deltaTime * 5);
+
+    }
+
+    public void RefreshSpawn(Vector3 spawnLoc)
+    {
+        playerPosRounded = new Vector3(transform.position.x, transform.localScale.y / 2, transform.position.z);
+        playerPos = playerPosRounded;
+        playerStartPos = playerPosRounded;
     }
 
     private void OnCollisionEnter(Collision collision)
@@ -46,6 +54,14 @@ public class PlayerController : MonoBehaviour {
             player.transform.position = playerStartPos;
             playerPos = playerStartPos;
             playerPosRounded = playerStartPos;
+        }
+    }
+
+    private void OnTriggerEnter(Collider other)
+    {
+        if (other.transform.tag == "Goal")
+        {
+            GameManager._Instance.HitGoal(other.gameObject);
         }
     }
 }

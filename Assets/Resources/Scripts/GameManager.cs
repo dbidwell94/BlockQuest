@@ -13,6 +13,7 @@ public class GameManager : MonoBehaviour{
     private bool isInGame = false;
     private bool level_complete = false;
     public GameObject player, bot, wall, goal;
+    private int goalNum = 0;
 
 	// Use this for initialization
 	void Start () {
@@ -61,12 +62,15 @@ public class GameManager : MonoBehaviour{
         foreach (XMLDataManager.Goal g in container.goals)
         {
             Instantiate(goal, g.loc, new Quaternion());
+            
         }
         player.transform.position = container.player.loc + new Vector3(0, 2, 0);
         foreach (XMLDataManager.Bot b in container.bots)
         {
             Instantiate(bot, b.location, new Quaternion());
         }
+        goalNum = container.goals.Length;
+        player.GetComponent<PlayerController>().RefreshSpawn(player.transform.position);
     }
 
     void GenerateGrid()
@@ -95,5 +99,15 @@ public class GameManager : MonoBehaviour{
         floorRenderer.material.mainTexture = gridImage;
         floorRenderer.material.mainTextureScale = new Vector2(floorCollider.bounds.size.x, floorCollider.bounds.size.z);
         floorRenderer.material.mainTextureOffset = new Vector2(.5f, .5f);
+    }
+
+    public void HitGoal(GameObject goal)
+    {
+        Destroy(goal);
+        goalNum--;
+        if (goalNum <= 0)
+        {
+            LoadLevel(LevelManager.Levels[Random.Range(0, LevelManager.Levels.Count - 1)]);
+        }
     }
 }
