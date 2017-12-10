@@ -1,0 +1,42 @@
+{
+  "project_info": {
+    "project_number": "669820889927",
+    "firebase_url": "https://blockquest-a1e16.firebaseio.com",
+    "project_id": "blockquest-a1e16",
+    "storage_bucket": "blockquest-a1e16.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:669820889927:android:c1a2abeec1a06d80",
+        "android_client_info": {
+          "package_name": "com.BigGames.BlockQuest"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "669820889927-kjtbcfdn88ot1v7330p22pju6sh2avka.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD3-5t1XnB5gTNxt_-WgdwaY039A1FW3Ds"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 1,
+          "other_platform_oauth_client": []
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
