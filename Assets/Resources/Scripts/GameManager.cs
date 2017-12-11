@@ -7,6 +7,7 @@ using System.IO;
 public class GameManager : MonoBehaviour{
 
     public static GameManager _Instance;
+    public static List<GameObject> currentGameObjects;
     public Joystick joystick;
     private AudioClip[] bgmSounds;
     private AudioSource bgmPlayer;
@@ -53,21 +54,35 @@ public class GameManager : MonoBehaviour{
 
     void LoadLevel(LevelManager.Level level)
     {
+        if (currentGameObjects == null)
+        {
+            currentGameObjects = new List<GameObject>();
+        }
+        if (currentGameObjects.Count > 0)
+        {
+            foreach (GameObject obj in currentGameObjects)
+            {
+                Destroy(obj);
+            }
+            currentGameObjects.Clear();
+        }
         XMLDataManager container;
         XMLDataLoaderSaver.Load(level, out container);
         foreach (XMLDataManager.Wall w in container.walls)
         {
-            Instantiate(wall, w.loc, new Quaternion());
+            GameObject temp = Instantiate(wall, w.loc, new Quaternion());
+            currentGameObjects.Add(temp);
         }
         foreach (XMLDataManager.Goal g in container.goals)
         {
-            Instantiate(goal, g.loc, new Quaternion());
-            
+            GameObject temp = Instantiate(goal, g.loc, new Quaternion());
+            currentGameObjects.Add(temp);
         }
         player.transform.position = container.player.loc + new Vector3(0, 2, 0);
         foreach (XMLDataManager.Bot b in container.bots)
         {
-            Instantiate(bot, b.location, new Quaternion());
+            GameObject temp = Instantiate(bot, b.location, new Quaternion());
+            currentGameObjects.Add(temp);
         }
         goalNum = container.goals.Length;
         player.GetComponent<PlayerController>().RefreshSpawn(player.transform.position);
