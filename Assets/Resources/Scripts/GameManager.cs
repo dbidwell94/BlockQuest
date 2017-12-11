@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using UnityEngine.Advertisements;
 using System.IO;
 
 public class GameManager : MonoBehaviour{
@@ -27,7 +28,9 @@ public class GameManager : MonoBehaviour{
             LoadLevel(LevelManager.levelToLoad);
         }
         GenerateGrid();
-	}
+        Advertisement.Initialize("1267211");
+
+    }
 	
 	// Update is called once per frame
 	void Update () {
@@ -38,7 +41,7 @@ public class GameManager : MonoBehaviour{
 
         if (Input.GetKeyDown(KeyCode.Space))
         {
-            Texture2D goodPic = Screenshot.Capture(GameObject.Find("Main Camera").GetComponent<Camera>(),512, 512);
+            Texture2D goodPic = Screenshot.Capture(GameObject.Find("Main Camera").GetComponent<Camera>(),1024, 500);
             byte[] toSave = goodPic.EncodeToJPG();
             File.WriteAllBytes(Application.persistentDataPath + "/screenshot.jpg", toSave);
         }
@@ -54,6 +57,7 @@ public class GameManager : MonoBehaviour{
 
     void LoadLevel(LevelManager.Level level)
     {
+        Advertisement.Show();
         if (currentGameObjects == null)
         {
             currentGameObjects = new List<GameObject>();

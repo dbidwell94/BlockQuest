@@ -439,6 +439,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   joystick: {fileID: 1885722796}
+  player: {fileID: 0}
+  bot: {fileID: 0}
+  wall: {fileID: 0}
+  goal: {fileID: 0}
 --- !u!4 &109948563
 Transform:
   m_ObjectHideFlags: 0
@@ -3267,7 +3271,7 @@ MonoBehaviour:
     m_HorizontalOverflow: 0
     m_VerticalOverflow: 0
     m_LineSpacing: 1
-  m_Text: Select Object
+  m_Text: Create Object
 --- !u!222 &2002523191
 CanvasRenderer:
   m_ObjectHideFlags: 0
