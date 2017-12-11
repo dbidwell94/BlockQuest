@@ -368,12 +368,12 @@ Prefab:
     - target: {fileID: 224243727428010796, guid: e7694cf5e5b1b9241a80774f3b1e32a5,
         type: 2}
       propertyPath: m_AnchoredPosition.x
-      value: 371.20007
+      value: 116
       objectReference: {fileID: 0}
     - target: {fileID: 224243727428010796, guid: e7694cf5e5b1b9241a80774f3b1e32a5,
         type: 2}
       propertyPath: m_AnchoredPosition.y
-      value: 339.2
+      value: 106
       objectReference: {fileID: 0}
     - target: {fileID: 224243727428010796, guid: e7694cf5e5b1b9241a80774f3b1e32a5,
         type: 2}
@@ -418,17 +418,17 @@ Prefab:
     - target: {fileID: 224243727428010796, guid: e7694cf5e5b1b9241a80774f3b1e32a5,
         type: 2}
       propertyPath: m_LocalScale.x
-      value: 0.79999995
+      value: 0.25
       objectReference: {fileID: 0}
     - target: {fileID: 224243727428010796, guid: e7694cf5e5b1b9241a80774f3b1e32a5,
         type: 2}
       propertyPath: m_LocalScale.y
-      value: 0.79999995
+      value: 0.25
       objectReference: {fileID: 0}
     - target: {fileID: 224243727428010796, guid: e7694cf5e5b1b9241a80774f3b1e32a5,
         type: 2}
       propertyPath: m_LocalScale.z
-      value: 3.1999998
+      value: 0.25
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_ParentPrefab: {fileID: 100100000, guid: e7694cf5e5b1b9241a80774f3b1e32a5, type: 2}
@@ -489,7 +489,7 @@ MonoBehaviour:
   m_Script: {fileID: 1980459831, guid: f70555f144d8491a825f0804e09c671c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_UiScaleMode: 0
+  m_UiScaleMode: 1
   m_ReferencePixelsPerUnit: 100
   m_ScaleFactor: 1
   m_ReferenceResolution: {x: 800, y: 600}
