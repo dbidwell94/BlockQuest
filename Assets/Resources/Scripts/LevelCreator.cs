@@ -6,24 +6,34 @@ using System.IO;
 
 public class LevelCreator : MonoBehaviour {
 
-    public GameObject bot, player, wall, goal;
+    public GameObject bot, player, wall, goal, patrolPoint;
     public Button botButton, playerButton, wallButton, goalButton, selectObjectButton, spawnButton;
-    public Button mainMenuButton, saveDialogButton, loadButton, clearButton, optionsButton;
+    public Button mainMenuButton, saveDialogButton, loadButton, clearButton, optionsButton, selectBotButton;
     public GameObject saveDialog;
     public Button saveButton;
+    public Button spawnPatrol;
     public Text levelName;
     public GameObject optionsMenu;
     private GameObject objectToSpawn;
     private GameObject objectMenu;
     private GameObject floor;
     private Vector3 objectPos;
+    public GameObject botSelectMenu;
     private Dictionary<Vector3, GameObject> bots, goals, walls, players, allObjects;
+    private int botSelection = 0;
     private bool optionsShowing = false;
     private Texture2D levelScreenshot;
+    private List<GameObject> botList;
+    private Dictionary<GameObject, List<Vector3>> botsWithPPoints;
+    private GameObject selectedBot;
+    private List<GameObject> selectedBotPPoints;
 
     private void Start()
     {
+        selectedBotPPoints = new List<GameObject>();
+        selectBotButton.interactable = false;
         bots = new Dictionary<Vector3, GameObject>();
+        botList = new List<GameObject>();
         goals = new Dictionary<Vector3, GameObject>();
         walls = new Dictionary<Vector3, GameObject>();
         players = new Dictionary<Vector3, GameObject>();
@@ -39,6 +49,13 @@ public class LevelCreator : MonoBehaviour {
         spawnButton.onClick.AddListener(delegate { PlaceObject(objectToSpawn); });
         mainMenuButton.onClick.AddListener(delegate { UnityEngine.SceneManagement.SceneManager.LoadScene("MainMenu"); });
         optionsButton.onClick.AddListener(delegate {
+            if (selectedBotPPoints.Count > 0)
+            {
+                foreach (GameObject obj in selectedBotPPoints)
+                {
+                    Destroy(obj);
+                }
+            }
             optionsShowing = !optionsShowing;
             if (optionsShowing)
             {
@@ -62,7 +79,18 @@ public class LevelCreator : MonoBehaviour {
             levelScreenshot = screenSprite;
         });
         saveButton.onClick.AddListener(delegate { SaveLevel(); });
-
+        selectBotButton.onClick.AddListener(delegate { CycleBots(); });
+        spawnPatrol.onClick.AddListener(delegate { SelectObjectToDrag(patrolPoint);  botSelectMenu.SetActive(false);
+            if (botsWithPPoints != null && !botsWithPPoints.ContainsKey(selectedBot))
+            {
+                botsWithPPoints.Add(selectedBot, new List<Vector3>());
+            }
+            else if (botsWithPPoints == null)
+            {
+                botsWithPPoints = new Dictionary<GameObject, List<Vector3>>();
+                botsWithPPoints.Add(selectedBot, new List<Vector3>());
+            }
+        });
     }
 
     void SelectObjectToDrag(GameObject obj)
@@ -92,6 +120,13 @@ public class LevelCreator : MonoBehaviour {
 
     void ShowObjectMenu()
     {
+        if (selectedBotPPoints.Count > 0)
+        {
+            foreach (GameObject obj in selectedBotPPoints)
+            {
+                Destroy(obj);
+            }
+        }
         ClearObjectToSpawn();
         selectObjectButton.interactable = false;
         objectMenu.SetActive(true);
@@ -125,6 +160,8 @@ public class LevelCreator : MonoBehaviour {
                     GameObject newBot = Instantiate(obj, toPlace, new Quaternion());
                     bots.Add(newBot.transform.position, newBot);
                     allObjects.Add(newBot.transform.position, newBot);
+                    selectBotButton.interactable = true;
+                    botList.Add(newBot);
                     break;
                 case "Goal-Prefab":
                     GameObject newGoal = Instantiate(obj, toPlace, new Quaternion());
@@ -140,6 +177,11 @@ public class LevelCreator : MonoBehaviour {
                     GameObject newPlayer = Instantiate(obj, toPlace, new Quaternion());
                     players.Add(newPlayer.transform.position, newPlayer);
                     allObjects.Add(newPlayer.transform.position, newPlayer);
+                    break;
+                case "Patrol-prefab":
+                    botsWithPPoints[selectedBot].Add(toPlace);
+                    GameObject newPPoint = Instantiate(obj, toPlace, new Quaternion());
+                    selectedBotPPoints.Add(newPPoint);
                     break;
             }
         }
@@ -183,8 +225,13 @@ public class LevelCreator : MonoBehaviour {
         {
             XMLDataManager.Bot bot = new XMLDataManager.Bot
             {
-                botName = "Bot", location = o.Key, pPoints = null
+                botName = "Bot", location = o.Key
             };
+            if (botsWithPPoints.ContainsKey(o.Value))
+            {
+                bot.pPoints = botsWithPPoints[o.Value].ToArray();
+            }
+            else bot.pPoints = null;
             botsToSave.Add(bot);
         }
         List<XMLDataManager.Wall> wallsToSave = new List<XMLDataManager.Wall>();
@@ -213,5 +260,39 @@ public class LevelCreator : MonoBehaviour {
         };
         XMLDataLoaderSaver.Save(toSave, levelScreenshot);
         LevelManager.RebuildLists();
+    }
+
+    void CycleBots()
+    {
+        ClearObjectToSpawn();
+        if (botSelection > botList.Count - 1)
+        {
+            botSelection = 0;
+        }
+        botSelectMenu.SetActive(true);
+        Vector3 botPos = botList[botSelection].transform.position;
+        RectTransform menuTrans = botSelectMenu.GetComponent<RectTransform>();
+        Vector3 toPut = new Vector3(botPos.x, botPos.y + 1, botPos.z + 2);
+        selectedBot = botList[botSelection];
+
+        if (selectedBotPPoints.Count > 0)
+        {
+            foreach (GameObject obj in selectedBotPPoints)
+            {
+                Destroy(obj);
+            }
+        }
+        if (botsWithPPoints != null && botsWithPPoints.ContainsKey(botList[botSelection]))
+        {
+            foreach (Vector3 point in botsWithPPoints[botList[botSelection]])
+            {
+                GameObject pPoint = Instantiate(patrolPoint, point, new Quaternion());
+                selectedBotPPoints.Add(pPoint);
+            }
+        }
+
+        botSelection += 1;
+        menuTrans.position = toPut;
+
     }
 }
