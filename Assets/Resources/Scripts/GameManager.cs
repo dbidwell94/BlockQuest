@@ -86,6 +86,10 @@ public class GameManager : MonoBehaviour{
         foreach (XMLDataManager.Bot b in container.bots)
         {
             GameObject temp = Instantiate(bot, b.location, new Quaternion());
+            if (b.pPoints != null)
+            {
+                temp.GetComponent<BotScript>().patrolPoints = b.pPoints;
+            }
             currentGameObjects.Add(temp);
         }
         goalNum = container.goals.Length;

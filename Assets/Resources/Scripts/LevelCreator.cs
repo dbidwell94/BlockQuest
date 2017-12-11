@@ -188,7 +188,7 @@ public class LevelCreator : MonoBehaviour {
         if (players.Count >= 1)
         {
             playerButton.interactable = false;
-            if (obj.transform.tag == "player")
+            if (obj.transform.tag == "Player")
             {
                 ClearObjectToSpawn();
             }
