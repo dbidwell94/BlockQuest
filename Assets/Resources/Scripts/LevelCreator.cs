@@ -227,10 +227,14 @@ public class LevelCreator : MonoBehaviour {
             {
                 botName = "Bot", location = o.Key
             };
-            if (botsWithPPoints.ContainsKey(o.Value))
+            if (botsWithPPoints != null)
             {
-                bot.pPoints = botsWithPPoints[o.Value].ToArray();
+                if (botsWithPPoints.ContainsKey(o.Value))
+                {
+                    bot.pPoints = botsWithPPoints[o.Value].ToArray();
+                }
             }
+            
             else bot.pPoints = null;
             botsToSave.Add(bot);
         }

@@ -138,7 +138,7 @@ public static class FirebaseManager
     public static FirebaseDatabase instance;
     public static void UploadFileToFirebase(LevelManager.Level level)
     {
-        DatabaseReference data = FirebaseDatabase.DefaultInstance.GetReference("https://blockquest-a1e16.firebaseio.com/");
+        DatabaseReference data = FirebaseDatabase.DefaultInstance.GetReferenceFromUrl("https://blockquest-a1e16.firebaseio.com/");
 
         StorageReference levelFolder = root.Child(saveLoc);
         StorageReference userLevel = levelFolder.Child(level.LevelName);
@@ -149,7 +149,6 @@ public static class FirebaseManager
         levelPic.PutBytesAsync(level.LevelPic.EncodeToPNG());
 
         Level newLevel = new Level(level.LevelName, levelFile.Path, levelPic.Path);
-        string json = JsonUtility.ToJson(newLevel);
 
         data.Child(saveLoc).Child(level.LevelName).Child("File_Path").SetValueAsync(newLevel.filePath);
         data.Child(saveLoc).Child(level.LevelName).Child("Picture_Path").SetValueAsync(newLevel.picturePath);

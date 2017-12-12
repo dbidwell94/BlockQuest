@@ -103,7 +103,7 @@ public static class Screenshot
 {
     public static Texture2D Capture(Camera camera, int width, int height)
     {
-        RenderTexture renderTexture = new RenderTexture(width, height, 0);
+        RenderTexture renderTexture = new RenderTexture(width, height, 24);
         camera.targetTexture = renderTexture;
         Texture2D screenshot = new Texture2D(width, height);
         camera.Render();

@@ -4,6 +4,7 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.Advertisements;
 using System.IO;
+using UnityEngine.UI;
 
 public class GameManager : MonoBehaviour{
 
@@ -16,6 +17,10 @@ public class GameManager : MonoBehaviour{
     private bool level_complete = false;
     public GameObject player, bot, wall, goal;
     private int goalNum = 0;
+    public Button optionsButton;
+    public Button mainMenuButton;
+    public Button resumeButton;
+    public GameObject mainMenu;
 
 	// Use this for initialization
 	void Start () {
@@ -26,6 +31,18 @@ public class GameManager : MonoBehaviour{
         {
             isInGame = true;
             LoadLevel(LevelManager.levelToLoad);
+            optionsButton.onClick.AddListener(delegate
+            {
+                mainMenu.SetActive(true);
+            });
+            mainMenuButton.onClick.AddListener(delegate
+            {
+                SceneManager.LoadScene("MainMenu");
+            });
+            resumeButton.onClick.AddListener(delegate
+            {
+                mainMenu.SetActive(false);
+            });
         }
         GenerateGrid();
         Advertisement.Initialize("1267211");
