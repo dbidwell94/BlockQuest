@@ -5,6 +5,7 @@ using System.Xml.Serialization;
 using System.Xml;
 using System.IO;
 using Firebase;
+using Firebase.Database;
 using Firebase.Storage;
 using Firebase.Auth;
 
@@ -118,12 +119,27 @@ public static class XMLDataLoaderSaver
 
 public static class FirebaseManager
 {
-    
 
-   public static void UploadFileToFirebase(LevelManager.Level level)
+    public struct Level
     {
-        FirebaseStorage storage = FirebaseStorage.GetInstance("gs://blockquest-a1e16.appspot.com");
-        StorageReference root = storage.GetReferenceFromUrl("gs://blockquest-a1e16.appspot.com");
+       public string levelName;
+       public string filePath;
+       public string picturePath;
+        public Level(string name, string path, string pic)
+        {
+            levelName = name;
+            filePath = path;
+            picturePath = pic;
+        }
+    }
+
+    private static FirebaseStorage storage = FirebaseStorage.GetInstance("gs://blockquest-a1e16.appspot.com");
+    private static StorageReference root = storage.GetReferenceFromUrl("gs://blockquest-a1e16.appspot.com");
+
+    public static void UploadFileToFirebase(LevelManager.Level level)
+    {
+        Firebase.Unity.Editor.FirebaseEditorExtensions.SetEditorDatabaseUrl(FirebaseApp.DefaultInstance, "https://blockquest-a1e16.firebaseio.com/");
+
         StorageReference levelFolder = root.Child("User_Levels");
         StorageReference userLevel = levelFolder.Child(level.LevelName);
         StorageReference levelFile = userLevel.Child(level.LevelName + ".xml");
@@ -132,11 +148,12 @@ public static class FirebaseManager
         levelFile.PutFileAsync(level.LevelPath);
         levelPic.PutBytesAsync(level.LevelPic.EncodeToPNG());
 
-        Debug.Log(levelPic.Path);
+        Level newLevel = new Level(level.LevelName, levelFile.Path, levelPic.Path);
+        string json = JsonUtility.ToJson(newLevel);
+
+        DatabaseReference data = FirebaseDatabase.DefaultInstance.RootReference;
+        data.Child("User_Levels").Child(level.LevelName).Child("File_Path").SetValueAsync(newLevel.filePath);
+        data.Child("User_Levels").Child(level.LevelName).Child("Picture_Path").SetValueAsync(newLevel.picturePath);
     }
 
-   public static void DownloadFileFromDatabase()
-    {
-        // insert download function here
-    }
 }

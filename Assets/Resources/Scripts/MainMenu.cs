@@ -34,6 +34,8 @@ public class MainMenu : MonoBehaviour {
             LoadLevel(LevelManager.Levels[Random.Range(0, LevelManager.Levels.Count)]);
         });
         quitGame.onClick.AddListener(delegate { Application.Quit(); });
+        CheckLevels();
+
     }
 
     public void CreateLevel()
@@ -88,6 +90,11 @@ public class MainMenu : MonoBehaviour {
         {
             Destroy(obj);
         }
+    }
+
+    void CheckLevels()
+    {
+
     }
 
 }
