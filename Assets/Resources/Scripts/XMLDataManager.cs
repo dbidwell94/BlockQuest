@@ -4,6 +4,7 @@ using UnityEngine;
 using System.Xml.Serialization;
 using System.Xml;
 using System.IO;
+using System;
 using Firebase;
 using Firebase.Database;
 using Firebase.Storage;
@@ -119,7 +120,8 @@ public static class XMLDataLoaderSaver
 
 public static class FirebaseManager
 {
-    private static string saveLoc = "Default_Levels";
+    // IMPORTANT!! Modify this variable according to dev or user build!!
+    private static string saveLoc = "User_Levels";
 
     public struct Level
     {
@@ -152,6 +154,10 @@ public static class FirebaseManager
 
         data.Child(saveLoc).Child(level.LevelName).Child("File_Path").SetValueAsync(newLevel.filePath);
         data.Child(saveLoc).Child(level.LevelName).Child("Picture_Path").SetValueAsync(newLevel.picturePath);
+        if (saveLoc == "Default_Levels")
+        {
+            data.Child("Base_Level_Last_Changed").SetValueAsync(DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.fff"));
+        }
     }
 
     public static void DownloadBaseLevels()
@@ -174,12 +180,33 @@ public static class FirebaseManager
                    fileLocs.Add(shot.Child(loc).Child("File_Path").Value.ToString());
                    picLocs.Add(shot.Child(loc).Child("Picture_Path").Value.ToString());
                }
+               if (!Directory.Exists(Application.persistentDataPath + "/Levels"))
+               {
+                   Directory.CreateDirectory(Application.persistentDataPath + "/Levels");
+               }
                for (int i = 0; i < fileLocs.Count; i++)
                {
                    Directory.CreateDirectory(XMLDataLoaderSaver.savePath + keyNames[i]);
-                   root.Child(fileLocs[i]).GetFileAsync(XMLDataLoaderSaver.savePath + keyNames[i] + "/" + keyNames[i] + ".xml");
-                   root.Child(picLocs[i]).GetFileAsync(XMLDataLoaderSaver.savePath + keyNames[i] + "/" + keyNames[i] + ".png");
+               root.Child(fileLocs[i]).GetFileAsync(XMLDataLoaderSaver.savePath + keyNames[i] + "/" + keyNames[i] + ".xml").ContinueWith(done => {
+                   LevelManager.RebuildListASync();
+               });
+                   root.Child(picLocs[i]).GetFileAsync(XMLDataLoaderSaver.savePath + keyNames[i] + "/" + keyNames[i] + ".png").ContinueWith(done2 => {
+                       LevelManager.RebuildListASync();
+                   });
                }
+               LevelData levelData = new LevelData();
+               data.Child("Base_Level_Last_Changed").GetValueAsync().ContinueWith(y => {
+                   if (x.IsCompleted)
+                   {
+                       DateTime changed = DateTime.Parse(y.Result.Value.ToString());
+                       levelData.timeChanged = changed;
+                       using (FileStream stream = new FileStream(Application.persistentDataPath + "/leveldata.xml", FileMode.Create))
+                       {
+                           XmlSerializer xml = new XmlSerializer(typeof(LevelData));
+                           xml.Serialize(stream, levelData);
+                       }
+                   }
+               });
            }
            else if (x.IsFaulted)
            {
@@ -188,4 +215,40 @@ public static class FirebaseManager
        });
     }
 
+    public static void CheckNewLevels()
+    {
+        DatabaseReference data = FirebaseDatabase.DefaultInstance.RootReference;
+        data.Child("Base_Level_Last_Changed").GetValueAsync().ContinueWith(x => {
+            if (x.IsCompleted)
+            {
+                DateTime changed = DateTime.Parse(x.Result.Value.ToString());
+                if (File.Exists(Application.persistentDataPath + "/leveldata.xml"))
+                {
+                    XmlSerializer xml = new XmlSerializer(typeof(LevelData));
+                    DateTime current;
+                    using (FileStream stream = new FileStream(Application.persistentDataPath + "/leveldata.xml", FileMode.Open))
+                    {
+                        LevelData levelData = xml.Deserialize(stream) as LevelData;
+                        current = levelData.timeChanged;
+                    }
+                    if (current < changed)
+                    {
+                        DownloadBaseLevels();
+                    }
+                }
+                else if (!File.Exists(Application.persistentDataPath + "/leveldata.xml"))
+                {
+                    DownloadBaseLevels();
+                }
+            }
+        });
+    }
+
+}
+
+[XmlRoot("Root_Level_Data")]
+public class LevelData
+{
+    [XmlElement("Changed_Time")]
+    public DateTime timeChanged;
 }

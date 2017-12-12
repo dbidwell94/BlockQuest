@@ -57,7 +57,7 @@ public class BotScript : MonoBehaviour {
 
     void Patrol()
     {
-        botTrans.position = Vector3.MoveTowards(botTrans.position, toGo, Time.deltaTime * 5);
+        botTrans.position = Vector3.MoveTowards(botTrans.position, toGo, Time.deltaTime * 3.5f);
         if (pointsToGo.ContainsKey(botTrans.position))
         {
             pointsToGo[botTrans.position] = true;

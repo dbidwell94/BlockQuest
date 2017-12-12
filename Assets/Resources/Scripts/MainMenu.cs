@@ -21,21 +21,14 @@ public class MainMenu : MonoBehaviour {
 	void Start () {
         currentLevelButtons = new List<GameObject>();
         loadLevelButton.onClick.AddListener(delegate { ShowLoadLevelMenu(); });
-        if (LevelManager.Levels.Count <= 0)
-        {
-            LevelManager.RebuildLists();
-            if (LevelManager.Levels.Count <= 0)
-            {
-                loadLevelButton.interactable = false;
-                randomLevelButton.interactable = false;
-            }
-        }
+        ReloadLevels();
         randomLevelButton.onClick.AddListener(delegate {
             LoadLevel(LevelManager.Levels[Random.Range(0, LevelManager.Levels.Count)]);
         });
         quitGame.onClick.AddListener(delegate { Application.Quit(); });
-        CheckLevels();
         Firebase.Unity.Editor.FirebaseEditorExtensions.SetEditorDatabaseUrl(Firebase.FirebaseApp.DefaultInstance, "https://blockquest-a1e16.firebaseio.com/");
+        FirebaseManager.CheckNewLevels();
+        LevelManager.OnLevelsChanged += ReloadLevels;
     }
 
     public void CreateLevel()
@@ -50,12 +43,28 @@ public class MainMenu : MonoBehaviour {
         SceneManager.LoadScene("MainGame");
     }
 
+    public void ReloadLevels()
+    {
+        if (LevelManager.Levels.Count <= 0)
+        {
+            LevelManager.RebuildLists();
+            if (LevelManager.Levels.Count <= 0)
+            {
+                loadLevelButton.interactable = false;
+                randomLevelButton.interactable = false;
+            }
+        }
+        if (LevelManager.Levels.Count > 0)
+        {
+            Debug.Log(LevelManager.Levels.Count);
+            loadLevelButton.interactable = true;
+            randomLevelButton.interactable = true;
+        }
+    }
+
     private void Update()
     {
-        if (Input.GetKeyDown(KeyCode.Escape))
-        {
-            FirebaseManager.DownloadBaseLevels();
-        }
+        
     }
 
     void ShowLoadLevelMenu()
@@ -75,6 +84,7 @@ public class MainMenu : MonoBehaviour {
             newButton.GetComponent<Button>().onClick.AddListener(delegate
             {
                 LoadLevel(level);
+                loadingScreen.SetActive(true);
             });
             newButton.transform.GetChild(2).GetComponent<Button>().onClick.AddListener(delegate
             {
@@ -92,10 +102,6 @@ public class MainMenu : MonoBehaviour {
         }
     }
 
-    void CheckLevels()
-    {
-
-    }
 
 }
 

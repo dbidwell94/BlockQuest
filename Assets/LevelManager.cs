@@ -1,8 +1,11 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using System;
 
 public static class LevelManager {
+
+    public static event LevelChangedEventHandler OnLevelsChanged;
 
     public struct Level {
         public string LevelName;
@@ -37,11 +40,18 @@ public static class LevelManager {
                 Levels.Add(level);
             }
         }
-        catch (System.Exception)
+        catch (Exception)
         {
 
         }
     }
 
+    public delegate void LevelChangedEventHandler();
+
+    public static void RebuildListASync()
+    {
+        RebuildLists();
+        OnLevelsChanged();
+    }
 }
 
