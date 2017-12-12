@@ -6,7 +6,7 @@ using UnityEngine;
 
 public class Joystick : MonoBehaviour, IDragHandler, IPointerDownHandler, IPointerUpHandler {
 
-    public Vector2 JoystickOutput { get; set; }
+    public Vector2 JoystickOutput { get; protected set; }
     public int ClickCount { get; protected set; }
     private Image joyImage;
     private Image bkgImage;
@@ -14,6 +14,8 @@ public class Joystick : MonoBehaviour, IDragHandler, IPointerDownHandler, IPoint
     private bool axisLock;
     private float deadzone;
     private Vector3 tempPoint;
+    private Canvas joystickCanvas;
+    private Camera mainCam;
 
     public void Start()
     {
@@ -24,7 +26,9 @@ public class Joystick : MonoBehaviour, IDragHandler, IPointerDownHandler, IPoint
         bkgImage = GetComponent<Image>();
         joyColor = joyImage.color;
         axisLock = false;
-        deadzone = .1f;
+        deadzone = .05f;
+        joystickCanvas = GetComponentInParent<Canvas>();
+        mainCam = GameObject.Find("Main Camera").GetComponent<Camera>();
     }
 
     public virtual void OnDrag(PointerEventData ped)
@@ -34,8 +38,12 @@ public class Joystick : MonoBehaviour, IDragHandler, IPointerDownHandler, IPoint
         if(RectTransformUtility.ScreenPointToWorldPointInRectangle(bkgImage.rectTransform,
             ped.position, ped.pressEventCamera, out point))
         {
-            point.x = (point.x - bkgImage.rectTransform.position.x) / (bkgImage.rectTransform.sizeDelta.x / 2);
-            point.y = (point.y - bkgImage.rectTransform.position.y) / (bkgImage.rectTransform.sizeDelta.y / 2);
+            float scaleFactorY = Screen.width / Screen.height;
+            float scaleFactorX = Screen.height / Screen.width;
+            point = (mainCam.ScreenToViewportPoint(ped.position) - mainCam.ScreenToViewportPoint(bkgImage.rectTransform.position));
+            point.x = (point.x / (mainCam.ScreenToViewportPoint(bkgImage.rectTransform.position + new Vector3(bkgImage.rectTransform.rect.xMax * scaleFactorX, 0, 0)).x));
+            point.y = (point.y / (mainCam.ScreenToViewportPoint(bkgImage.rectTransform.position + new Vector3(bkgImage.rectTransform.rect.yMax * scaleFactorY, 0, 0)).y));
+
             if (point.x < 1 * deadzone && point.x > -1 * deadzone) point.x = 0;
             if (point.y < 1 * deadzone && point.y > -1 * deadzone) point.y = 0;
             if (axisLock && tempPoint.x != 0) point.y = 0;
@@ -51,7 +59,7 @@ public class Joystick : MonoBehaviour, IDragHandler, IPointerDownHandler, IPoint
     public virtual void OnPointerDown(PointerEventData ped)
     {
         ClickCount++;
-        if (ClickCount > 2) axisLock = !axisLock;
+        if (ClickCount > 1) axisLock = !axisLock;
             joyImage.color = (axisLock) ? Color.red : joyColor;
     }
 
