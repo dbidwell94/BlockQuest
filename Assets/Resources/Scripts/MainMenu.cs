@@ -35,7 +35,7 @@ public class MainMenu : MonoBehaviour {
         });
         quitGame.onClick.AddListener(delegate { Application.Quit(); });
         CheckLevels();
-
+        Firebase.Unity.Editor.FirebaseEditorExtensions.SetEditorDatabaseUrl(Firebase.FirebaseApp.DefaultInstance, "https://blockquest-a1e16.firebaseio.com/");
     }
 
     public void CreateLevel()
@@ -54,7 +54,7 @@ public class MainMenu : MonoBehaviour {
     {
         if (Input.GetKeyDown(KeyCode.Escape))
         {
-            FirebaseManager.UploadFileToFirebase(LevelManager.Levels[Random.Range(0, LevelManager.Levels.Count)]);
+            FirebaseManager.DownloadBaseLevels();
         }
     }
 
@@ -103,7 +103,7 @@ public static class Screenshot
 {
     public static Texture2D Capture(Camera camera, int width, int height)
     {
-        RenderTexture renderTexture = new RenderTexture(width, height, 24);
+        RenderTexture renderTexture = new RenderTexture(width, height, 0);
         camera.targetTexture = renderTexture;
         Texture2D screenshot = new Texture2D(width, height);
         camera.Render();

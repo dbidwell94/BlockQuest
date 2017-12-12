@@ -15,6 +15,14 @@
       },
       "oauth_client": [
         {
+          "client_id": "669820889927-08tebunbcrf12tltucsues3gi5qudaqu.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.BigGames.BlockQuest",
+            "certificate_hash": "435de6c57cb2e6ad8a2d67f374448b68eb37ced1"
+          }
+        },
+        {
           "client_id": "669820889927-kjtbcfdn88ot1v7330p22pju6sh2avka.apps.googleusercontent.com",
           "client_type": 3
         }
@@ -29,8 +37,13 @@
           "status": 1
         },
         "appinvite_service": {
-          "status": 1,
-          "other_platform_oauth_client": []
+          "status": 2,
+          "other_platform_oauth_client": [
+            {
+              "client_id": "669820889927-kjtbcfdn88ot1v7330p22pju6sh2avka.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
         },
         "ads_service": {
           "status": 2

@@ -41,7 +41,7 @@ public class GameManager : MonoBehaviour{
 
         if (Input.GetKeyDown(KeyCode.Space))
         {
-            Texture2D goodPic = Screenshot.Capture(GameObject.Find("Main Camera").GetComponent<Camera>(),1024, 500);
+            Texture2D goodPic = Screenshot.Capture(GameObject.Find("Main Camera").GetComponent<Camera>(), 1024, 500);
             byte[] toSave = goodPic.EncodeToJPG();
             File.WriteAllBytes(Application.persistentDataPath + "/screenshot.jpg", toSave);
         }

@@ -119,6 +119,7 @@ public static class XMLDataLoaderSaver
 
 public static class FirebaseManager
 {
+    private static string saveLoc = "Default_Levels";
 
     public struct Level
     {
@@ -132,15 +133,14 @@ public static class FirebaseManager
             picturePath = pic;
         }
     }
-
     private static FirebaseStorage storage = FirebaseStorage.GetInstance("gs://blockquest-a1e16.appspot.com");
     private static StorageReference root = storage.GetReferenceFromUrl("gs://blockquest-a1e16.appspot.com");
-
+    public static FirebaseDatabase instance;
     public static void UploadFileToFirebase(LevelManager.Level level)
     {
-        Firebase.Unity.Editor.FirebaseEditorExtensions.SetEditorDatabaseUrl(FirebaseApp.DefaultInstance, "https://blockquest-a1e16.firebaseio.com/");
+        DatabaseReference data = FirebaseDatabase.DefaultInstance.GetReference("https://blockquest-a1e16.firebaseio.com/");
 
-        StorageReference levelFolder = root.Child("User_Levels");
+        StorageReference levelFolder = root.Child(saveLoc);
         StorageReference userLevel = levelFolder.Child(level.LevelName);
         StorageReference levelFile = userLevel.Child(level.LevelName + ".xml");
         StorageReference levelPic = userLevel.Child(level.LevelName + ".png");
@@ -151,9 +151,42 @@ public static class FirebaseManager
         Level newLevel = new Level(level.LevelName, levelFile.Path, levelPic.Path);
         string json = JsonUtility.ToJson(newLevel);
 
+        data.Child(saveLoc).Child(level.LevelName).Child("File_Path").SetValueAsync(newLevel.filePath);
+        data.Child(saveLoc).Child(level.LevelName).Child("Picture_Path").SetValueAsync(newLevel.picturePath);
+    }
+
+    public static void DownloadBaseLevels()
+    {
         DatabaseReference data = FirebaseDatabase.DefaultInstance.RootReference;
-        data.Child("User_Levels").Child(level.LevelName).Child("File_Path").SetValueAsync(newLevel.filePath);
-        data.Child("User_Levels").Child(level.LevelName).Child("Picture_Path").SetValueAsync(newLevel.picturePath);
+        var snap = data.Child("Default_Levels").GetValueAsync().ContinueWith(x =>
+       {
+           if (x.IsCompleted)
+           {
+               DataSnapshot shot = x.Result;
+               List<string> keyNames = new List<string>();
+               foreach (var item in shot.Children)
+               {
+                   keyNames.Add(item.Key);                  
+               }
+               List<string> fileLocs = new List<string>();
+               List<string> picLocs = new List<string>();
+               foreach (string loc in keyNames)
+               {
+                   fileLocs.Add(shot.Child(loc).Child("File_Path").Value.ToString());
+                   picLocs.Add(shot.Child(loc).Child("Picture_Path").Value.ToString());
+               }
+               for (int i = 0; i < fileLocs.Count; i++)
+               {
+                   Directory.CreateDirectory(XMLDataLoaderSaver.savePath + keyNames[i]);
+                   root.Child(fileLocs[i]).GetFileAsync(XMLDataLoaderSaver.savePath + keyNames[i] + "/" + keyNames[i] + ".xml");
+                   root.Child(picLocs[i]).GetFileAsync(XMLDataLoaderSaver.savePath + keyNames[i] + "/" + keyNames[i] + ".png");
+               }
+           }
+           else if (x.IsFaulted)
+           {
+               Debug.Log("Fail!");
+           }
+       });
     }
 
 }
