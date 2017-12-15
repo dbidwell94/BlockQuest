@@ -58,7 +58,7 @@ public class Joystick : MonoBehaviour, IDragHandler, IPointerDownHandler, IPoint
 
     public virtual void OnPointerDown(PointerEventData ped)
     {
-        ClickCount++;
+        //ClickCount++;
         if (ClickCount > 1) axisLock = !axisLock;
             joyImage.color = (axisLock) ? Color.red : joyColor;
     }

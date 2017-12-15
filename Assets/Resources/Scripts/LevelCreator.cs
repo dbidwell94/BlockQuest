@@ -74,7 +74,7 @@ public class LevelCreator : MonoBehaviour {
         {
             saveDialog.SetActive(true);
             Image screenshotImage = saveDialog.transform.GetChild(0).GetComponent<Image>();
-            Texture2D screenSprite = Screenshot.Capture(GameObject.Find("Camera").GetComponent<Camera>(), 512, 512);
+            Texture2D screenSprite = Screenshot.Capture(GameObject.Find("Main Camera").GetComponent<Camera>(), 512, 512);
             screenshotImage.sprite = Sprite.Create(screenSprite, new Rect(0, 0, screenSprite.width, screenSprite.height), new Vector2());
             levelScreenshot = screenSprite;
         });

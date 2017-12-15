@@ -123,6 +123,13 @@ public static class FirebaseManager
     // IMPORTANT!! Modify this variable according to dev or user build!!
     private static string saveLoc = "User_Levels";
 
+    public static int filesToDownload;
+    public static int filesLeft;
+    public static bool filesDownloaded = false;
+
+    public delegate void fileHandler();
+    public static fileHandler onFilesDownloaded;
+
     public struct Level
     {
        public string levelName;
@@ -186,12 +193,16 @@ public static class FirebaseManager
                }
                for (int i = 0; i < fileLocs.Count; i++)
                {
+                   filesToDownload += 2;
+                   filesLeft += 2;
                    Directory.CreateDirectory(XMLDataLoaderSaver.savePath + keyNames[i]);
                root.Child(fileLocs[i]).GetFileAsync(XMLDataLoaderSaver.savePath + keyNames[i] + "/" + keyNames[i] + ".xml").ContinueWith(done => {
-                   LevelManager.RebuildListASync();
+                   filesToDownload -= 1;
+                   UpdateDownloadProgress();
                });
                    root.Child(picLocs[i]).GetFileAsync(XMLDataLoaderSaver.savePath + keyNames[i] + "/" + keyNames[i] + ".png").ContinueWith(done2 => {
-                       LevelManager.RebuildListASync();
+                       filesToDownload -= 1;
+                       UpdateDownloadProgress();
                    });
                }
                LevelData levelData = new LevelData();
@@ -235,6 +246,11 @@ public static class FirebaseManager
                     {
                         DownloadBaseLevels();
                     }
+                    else
+                    {
+                        filesDownloaded = true;
+                        onFilesDownloaded();
+                    }
                 }
                 else if (!File.Exists(Application.persistentDataPath + "/leveldata.xml"))
                 {
@@ -242,6 +258,15 @@ public static class FirebaseManager
                 }
             }
         });
+    }
+
+    public static void UpdateDownloadProgress()
+    {
+        if (filesToDownload <= 0)
+        {
+            filesDownloaded = true;
+            onFilesDownloaded();
+        }
     }
 
 }

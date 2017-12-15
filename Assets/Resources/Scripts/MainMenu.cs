@@ -12,6 +12,7 @@ public class MainMenu : MonoBehaviour {
     public GameObject levelsContainer;
     public GameObject levelButton;
     public GameObject loadingScreen;
+    public GameObject downloadingScreen;
     public Button loadLevelButton;
     public Button randomLevelButton;
     public Button quitGame;
@@ -19,6 +20,7 @@ public class MainMenu : MonoBehaviour {
 
 	// Use this for initialization
 	void Start () {
+        downloadingScreen = GameObject.Find("Downloading_Screen");
         currentLevelButtons = new List<GameObject>();
         loadLevelButton.onClick.AddListener(delegate { ShowLoadLevelMenu(); });
         ReloadLevels();
@@ -27,8 +29,21 @@ public class MainMenu : MonoBehaviour {
         });
         quitGame.onClick.AddListener(delegate { Application.Quit(); });
         Firebase.Unity.Editor.FirebaseEditorExtensions.SetEditorDatabaseUrl(Firebase.FirebaseApp.DefaultInstance, "https://blockquest-a1e16.firebaseio.com/");
-        FirebaseManager.CheckNewLevels();
-        LevelManager.OnLevelsChanged += ReloadLevels;
+        if (!FirebaseManager.filesDownloaded)
+        {
+            FirebaseManager.CheckNewLevels();
+            ShowDownloadScreen();
+        }
+        FirebaseManager.onFilesDownloaded += ShowMainMenu;
+        FirebaseManager.onFilesDownloaded += ReloadLevels;      
+    }
+
+    void ShowDownloadScreen()
+    {
+        mainMenu.SetActive(false);
+        loadLevelMenu.SetActive(false);
+        loadingScreen.SetActive(false);
+        downloadingScreen.SetActive(true);
     }
 
     public void CreateLevel()
@@ -45,9 +60,9 @@ public class MainMenu : MonoBehaviour {
 
     public void ReloadLevels()
     {
+        LevelManager.RebuildLists();
         if (LevelManager.Levels.Count <= 0)
         {
-            LevelManager.RebuildLists();
             if (LevelManager.Levels.Count <= 0)
             {
                 loadLevelButton.interactable = false;
@@ -56,7 +71,6 @@ public class MainMenu : MonoBehaviour {
         }
         if (LevelManager.Levels.Count > 0)
         {
-            Debug.Log(LevelManager.Levels.Count);
             loadLevelButton.interactable = true;
             randomLevelButton.interactable = true;
         }
@@ -71,35 +85,44 @@ public class MainMenu : MonoBehaviour {
     {
         mainMenu.SetActive(false);
         loadLevelMenu.SetActive(true);
-        
-        foreach (LevelManager.Level level in LevelManager.Levels)
+
+        if (currentLevelButtons.Count <= 0)
         {
-            GameObject newButton = Instantiate(levelButton);
-            levelsContainer.GetComponent<RectTransform>().sizeDelta += new Vector2(0, newButton.GetComponent<RectTransform>().sizeDelta.y);
-            newButton.transform.SetParent(levelsContainer.transform);
-            newButton.GetComponent<RectTransform>().localScale = new Vector3(1, 1, 1);
-            Sprite screenshot = Sprite.Create(level.LevelPic, new Rect(0, 0, level.LevelPic.width, level.LevelPic.height), new Vector2());
-            newButton.transform.GetChild(0).GetComponent<Image>().sprite = screenshot;
-            newButton.GetComponentInChildren<Text>().text = level.LevelName;
-            newButton.GetComponent<Button>().onClick.AddListener(delegate
+            foreach (LevelManager.Level level in LevelManager.Levels)
             {
-                LoadLevel(level);
-                loadingScreen.SetActive(true);
-            });
-            newButton.transform.GetChild(2).GetComponent<Button>().onClick.AddListener(delegate
-            {
-                FirebaseManager.UploadFileToFirebase(level);
-            });
-            currentLevelButtons.Add(newButton);
+                GameObject newButton = Instantiate(levelButton);
+                levelsContainer.GetComponent<RectTransform>().sizeDelta += new Vector2(0, newButton.GetComponent<RectTransform>().sizeDelta.y);
+                newButton.transform.SetParent(levelsContainer.transform);
+                newButton.GetComponent<RectTransform>().localScale = new Vector3(1, 1, 1);
+                Sprite screenshot = Sprite.Create(level.LevelPic, new Rect(0, 0, level.LevelPic.width, level.LevelPic.height), new Vector2());
+                newButton.transform.GetChild(0).GetComponent<Image>().sprite = screenshot;
+                newButton.GetComponentInChildren<Text>().text = level.LevelName;
+                newButton.GetComponent<Button>().onClick.AddListener(delegate
+                {
+                    LoadLevel(level);
+                    loadingScreen.SetActive(true);
+                });
+                newButton.transform.GetChild(2).GetComponent<Button>().onClick.AddListener(delegate
+                {
+                    FirebaseManager.UploadFileToFirebase(level);
+                });
+                currentLevelButtons.Add(newButton);
+            }
         }
+        
     }
 
-    void ShowMainMenu()
+    public void ShowMainMenu()
     {
-        foreach (GameObject obj in currentLevelButtons)
+        if (downloadingScreen.activeInHierarchy)
         {
-            Destroy(obj);
+            downloadingScreen.SetActive(false);
         }
+        if (loadLevelMenu.activeInHierarchy)
+        {
+            loadLevelMenu.SetActive(false);            
+        }
+        mainMenu.SetActive(true);
     }
 
 

@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
-using UnityEngine.Advertisements;
+using Firebase.Auth;
 using System.IO;
 using UnityEngine.UI;
 
@@ -45,8 +45,7 @@ public class GameManager : MonoBehaviour{
             });
         }
         GenerateGrid();
-        Advertisement.Initialize("1267211");
-
+        
     }
 	
 	// Update is called once per frame
@@ -74,7 +73,6 @@ public class GameManager : MonoBehaviour{
 
     void LoadLevel(LevelManager.Level level)
     {
-        Advertisement.Show();
         if (currentGameObjects == null)
         {
             currentGameObjects = new List<GameObject>();

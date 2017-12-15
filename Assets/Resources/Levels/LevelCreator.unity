@@ -443,6 +443,10 @@ MonoBehaviour:
   bot: {fileID: 0}
   wall: {fileID: 0}
   goal: {fileID: 0}
+  optionsButton: {fileID: 0}
+  mainMenuButton: {fileID: 0}
+  resumeButton: {fileID: 0}
+  mainMenu: {fileID: 0}
 --- !u!4 &109948563
 Transform:
   m_ObjectHideFlags: 0
@@ -3597,7 +3601,7 @@ GameObject:
   - component: {fileID: 1885895607}
   - component: {fileID: 1885895606}
   m_Layer: 0
-  m_Name: Camera
+  m_Name: Main Camera
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
