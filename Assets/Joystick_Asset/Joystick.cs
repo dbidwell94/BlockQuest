@@ -28,7 +28,7 @@ public class Joystick : MonoBehaviour, IDragHandler, IPointerDownHandler, IPoint
         axisLock = false;
         deadzone = .05f;
         joystickCanvas = GetComponentInParent<Canvas>();
-        mainCam = GameObject.Find("Main Camera").GetComponent<Camera>();
+        mainCam = Camera.main;
     }
 
     public virtual void OnDrag(PointerEventData ped)

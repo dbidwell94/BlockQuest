@@ -25,6 +25,8 @@ public class MainMenu : MonoBehaviour {
         loadLevelButton.onClick.AddListener(delegate { ShowLoadLevelMenu(); });
         ReloadLevels();
         randomLevelButton.onClick.AddListener(delegate {
+            mainMenu.SetActive(false);
+            loadingScreen.SetActive(true);
             LoadLevel(LevelManager.Levels[Random.Range(0, LevelManager.Levels.Count)]);
         });
         quitGame.onClick.AddListener(delegate { Application.Quit(); });

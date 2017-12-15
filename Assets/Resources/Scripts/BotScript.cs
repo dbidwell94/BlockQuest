@@ -18,8 +18,9 @@ public class BotScript : MonoBehaviour {
         botTrans = this.GetComponent<Transform>();
         toGo = botTrans.position;
         botLight = GetComponentInChildren<Light>();
-        maxIntensity = 10;
+        maxIntensity = 30;
         intensity = Random.Range(1, maxIntensity);
+        botLight.intensity = intensity;
         lightSwitch = Random.Range(1, 2) > 1;
         if (patrolPoints != null)
         {
@@ -51,8 +52,17 @@ public class BotScript : MonoBehaviour {
 
     void Breathe()
     {
-        botLight.intensity += ((Time.deltaTime * 10) * (lightSwitch ? 1 : -1));
-        lightSwitch = (intensity < maxIntensity && lightSwitch) || (intensity < 1 && !lightSwitch);
+        if (botLight.intensity >= maxIntensity)
+        {
+            lightSwitch = true;
+        }
+        else if (botLight.intensity <= 0)
+        {
+            lightSwitch = false;
+        }
+        float multiplier = (lightSwitch) ? -1f : 1f;
+        intensity = botLight.intensity + (Time.deltaTime * 50) * multiplier;
+        botLight.intensity = intensity;
     }
 
     void Patrol()

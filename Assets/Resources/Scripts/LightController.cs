@@ -29,7 +29,7 @@ public class LightController : MonoBehaviour {
     void Update () {
         sun.transform.LookAt(player.transform);
         range = Vector3.Distance(sun.transform.position, player.transform.position);
-        myLight.range = range * 1.15f;
+        myLight.range = range * 1.1f;
 
         if (Input.GetKeyDown(KeyCode.Space) || breathe)
         {
