@@ -220,7 +220,7 @@ PlayerSettings:
   AndroidTargetDevice: 0
   AndroidSplashScreenScale: 0
   androidSplashScreen: {fileID: 0}
-  AndroidKeystoreName: C:/Users/Devin/Documents/Unity Projects/Block Quest_Backup/user.keystore
+  AndroidKeystoreName: C:/Users/Devin/Documents/Unity Projects/Block Quest/user.keystore
   AndroidKeyaliasName: devin
   AndroidTVCompatibility: 1
   AndroidIsGame: 1
