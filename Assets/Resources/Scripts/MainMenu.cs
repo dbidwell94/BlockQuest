@@ -34,6 +34,7 @@ public class MainMenu : MonoBehaviour {
             FirebaseManager.CheckNewLevels();
             ShowDownloadScreen();
         }
+        else ShowMainMenu();
         FirebaseManager.onFilesDownloaded += ShowMainMenu;
         FirebaseManager.onFilesDownloaded += ReloadLevels;      
     }
