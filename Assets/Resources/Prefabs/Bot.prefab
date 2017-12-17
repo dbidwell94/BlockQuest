@@ -82,10 +82,10 @@ MeshRenderer:
   m_GameObject: {fileID: 1721250637691668}
   m_Enabled: 1
   m_CastShadows: 1
-  m_ReceiveShadows: 1
+  m_ReceiveShadows: 0
   m_MotionVectors: 1
   m_LightProbeUsage: 1
-  m_ReflectionProbeUsage: 1
+  m_ReflectionProbeUsage: 0
   m_Materials:
   - {fileID: 2100000, guid: 9f9f71c7267bec3448f5059a4214f8a8, type: 2}
   m_StaticBatchInfo:

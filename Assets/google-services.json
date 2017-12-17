@@ -15,11 +15,19 @@
       },
       "oauth_client": [
         {
-          "client_id": "669820889927-08tebunbcrf12tltucsues3gi5qudaqu.apps.googleusercontent.com",
+          "client_id": "669820889927-m8ep9snsft8cj825l978vfkk456kddo7.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {
             "package_name": "com.BigGames.BlockQuest",
             "certificate_hash": "435de6c57cb2e6ad8a2d67f374448b68eb37ced1"
+          }
+        },
+        {
+          "client_id": "669820889927-08tebunbcrf12tltucsues3gi5qudaqu.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.BigGames.BlockQuest",
+            "certificate_hash": "8ee6bdc8a8d04124f206dfd6bf3249b64217ac74"
           }
         },
         {

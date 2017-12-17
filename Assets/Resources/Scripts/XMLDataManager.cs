@@ -5,10 +5,11 @@ using System.Xml.Serialization;
 using System.Xml;
 using System.IO;
 using System;
-using Firebase;
 using Firebase.Database;
 using Firebase.Storage;
 using Firebase.Auth;
+using GooglePlayGames;
+using GooglePlayGames.BasicApi;
 
 [XmlRoot("Level")]
 public class XMLDataManager {
@@ -121,7 +122,7 @@ public static class XMLDataLoaderSaver
 public static class FirebaseManager
 {
     // IMPORTANT!! Modify this variable according to dev or user build!!
-    private static string saveLoc = "User_Levels";
+    private static string saveLoc = "Default_Levels";
 
     public static int filesToDownload;
     public static int filesLeft;
@@ -129,6 +130,14 @@ public static class FirebaseManager
 
     public delegate void fileHandler();
     public static fileHandler onFilesDownloaded;
+
+    private static FirebaseAuth auth = FirebaseAuth.DefaultInstance;
+    public static FirebaseUser user;
+    public static bool GoogleConfigDone = false;
+    public static PlayGamesClientConfiguration config = new PlayGamesClientConfiguration.Builder()
+        .RequestIdToken()
+        .RequestServerAuthCode(false)
+        .Build();
 
     public struct Level
     {
@@ -269,6 +278,14 @@ public static class FirebaseManager
         }
     }
 
+    public static void FirebaseLogin()
+    {
+        Credential cred = GoogleAuthProvider.GetCredential(PlayGamesPlatform.Instance.GetIdToken(),
+            PlayGamesPlatform.Instance.GetServerAuthCode());
+        auth.SignInWithCredentialAsync(cred).ContinueWith(done => {
+            user = done.Result;
+        });
+    }
 }
 
 [XmlRoot("Root_Level_Data")]

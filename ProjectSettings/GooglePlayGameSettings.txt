@@ -1,0 +1,9 @@
+lastUpgrade=00942
+proj.pluginVersion=0.9.42
+proj.AppId=669820889927
+and.BundleId=com.BigGames.BlockQuest
+proj.classDir=Assets
+proj.ConstantsClassName=GPGSIds
+and.ResourceData=%3c%3fxml+version%3d%221.0%22+encoding%3d%22utf-8%22%3f%3e%0d%0a%3c%21--%0d%0aGoogle+Play+game+services+IDs.%0d%0aSave+this+file+as+res%2fvalues%2fgames-ids.xml+in+your+project.%0d%0a--%3e%0d%0a%3cresources%3e%0d%0a++%3c%21--+app_id+--%3e%0d%0a++%3cstring+name%3d%22app_id%22+translatable%3d%22false%22%3e669820889927%3c%2fstring%3e%0d%0a++%3c%21--+package_name+--%3e%0d%0a++%3cstring+name%3d%22package_name%22+translatable%3d%22false%22%3ecom.BigGames.BlockQuest%3c%2fstring%3e%0d%0a++%3c%21--+achievement+5+Minute+Man+--%3e%0d%0a++%3cstring+name%3d%22achievement_5_minute_man%22+translatable%3d%22false%22%3eCgkIx9a-o78TEAIQAg%3c%2fstring%3e%0d%0a++%3c%21--+achievement+Contributor+--%3e%0d%0a++%3cstring+name%3d%22achievement_contributor%22+translatable%3d%22false%22%3eCgkIx9a-o78TEAIQAw%3c%2fstring%3e%0d%0a++%3c%21--+achievement+Team+Player+--%3e%0d%0a++%3cstring+name%3d%22achievement_team_player%22+translatable%3d%22false%22%3eCgkIx9a-o78TEAIQBA%3c%2fstring%3e%0d%0a++%3c%21--+achievement+Persistent+--%3e%0d%0a++%3cstring+name%3d%22achievement_persistent%22+translatable%3d%22false%22%3eCgkIx9a-o78TEAIQBQ%3c%2fstring%3e%0d%0a++%3c%21--+leaderboard+Marathon+--%3e%0d%0a++%3cstring+name%3d%22leaderboard_marathon%22+translatable%3d%22false%22%3eCgkIx9a-o78TEAIQBg%3c%2fstring%3e%0d%0a%3c%2fresources%3e%0d%0a
+and.ClientId=669820889927-kjtbcfdn88ot1v7330p22pju6sh2avka.apps.googleusercontent.com
+android.SetupDone=true

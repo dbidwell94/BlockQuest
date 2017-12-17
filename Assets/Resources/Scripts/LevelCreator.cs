@@ -28,6 +28,8 @@ public class LevelCreator : MonoBehaviour {
     private GameObject selectedBot;
     private List<GameObject> selectedBotPPoints;
 
+    private Vector3 cameraPos;
+
     private void Start()
     {
         selectedBotPPoints = new List<GameObject>();
@@ -91,6 +93,7 @@ public class LevelCreator : MonoBehaviour {
                 botsWithPPoints.Add(selectedBot, new List<Vector3>());
             }
         });
+        cameraPos = Camera.main.transform.position;
     }
 
     void SelectObjectToDrag(GameObject obj)
@@ -100,6 +103,7 @@ public class LevelCreator : MonoBehaviour {
         objectPos = objectToSpawn.transform.position;
         objectMenu.SetActive(false);
         selectObjectButton.interactable = true;
+        Camera.main.transform.SetParent(objectToSpawn.transform);
     }
 
     private void Update()
@@ -108,10 +112,37 @@ public class LevelCreator : MonoBehaviour {
         {
             MoveObject();
         }
+        PinchAndZoom();
+    }
+
+    void PinchAndZoom()
+    {
+        if (Input.touches.Length >= 2)
+        {
+            Touch touchZero = Input.GetTouch(0);
+            Touch touchOne = Input.GetTouch(1);
+
+            Vector2 touchZeroPrevPos = touchZero.position - touchZero.deltaPosition;
+            Vector2 touchOnePrevPos = touchOne.position - touchOne.deltaPosition;
+
+            float prevTouchDeltaMag = (touchZeroPrevPos - touchOnePrevPos).magnitude;
+            float touchDeltaMag = (touchZero.position - touchOne.position).magnitude;
+
+            float deltaMagnitudeDiff = prevTouchDeltaMag - touchDeltaMag;
+
+            float newFOV = Camera.main.fieldOfView + deltaMagnitudeDiff * Time.deltaTime * 2.5f;
+
+            newFOV = Mathf.Clamp(newFOV, 10, 60);
+            Camera.main.fieldOfView = newFOV;
+        }
+       
     }
 
     void ClearObjectToSpawn()
     {
+        Camera.main.transform.SetParent(null);
+        Camera.main.transform.position = cameraPos;
+        Camera.main.fieldOfView = 60;        
         if (objectToSpawn != null)
         {
             Destroy(objectToSpawn);
@@ -152,6 +183,8 @@ public class LevelCreator : MonoBehaviour {
         Vector3 toPlace = new Vector3(objectToSpawn.transform.position.x, obj.transform.localScale.y / 2, objectToSpawn.transform.position.z);
         if (!allObjects.ContainsKey(toPlace))
         {
+            Camera.main.transform.parent = null;
+            Debug.Log(Camera.main.transform.parent);
             switch (obj.name)
             {
                 default:
@@ -193,7 +226,10 @@ public class LevelCreator : MonoBehaviour {
                 ClearObjectToSpawn();
             }
         }
-        
+        if (obj.transform.tag != "Player")
+        {
+            Camera.main.transform.parent = objectToSpawn.transform;
+        }
     }
 
     void ClearLevel()
@@ -214,6 +250,9 @@ public class LevelCreator : MonoBehaviour {
 
     void SaveLevel()
     {
+        Camera.main.transform.SetParent(null);
+        Camera.main.fieldOfView = 60;
+        Camera.main.transform.position = cameraPos;
         XMLDataManager.Player playerToSave = new XMLDataManager.Player();
         foreach (KeyValuePair<Vector3, GameObject> p in players)
         {

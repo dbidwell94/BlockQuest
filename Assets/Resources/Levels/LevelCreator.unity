@@ -391,10 +391,10 @@ MonoBehaviour:
       Version=1.0.0.0, Culture=neutral, PublicKeyToken=null
   m_FontData:
     m_Font: {fileID: 12800000, guid: 74699fd3f6858e5478bcd25aa417a14a, type: 3}
-    m_FontSize: 14
+    m_FontSize: 20
     m_FontStyle: 0
     m_BestFit: 0
-    m_MinSize: 10
+    m_MinSize: 2
     m_MaxSize: 40
     m_Alignment: 4
     m_AlignByGeometry: 0
@@ -447,6 +447,7 @@ MonoBehaviour:
   mainMenuButton: {fileID: 0}
   resumeButton: {fileID: 0}
   mainMenu: {fileID: 0}
+  joySizer: {fileID: 0}
 --- !u!4 &109948563
 Transform:
   m_ObjectHideFlags: 0
@@ -1187,12 +1188,12 @@ Prefab:
     - target: {fileID: 224243727428010796, guid: e7694cf5e5b1b9241a80774f3b1e32a5,
         type: 2}
       propertyPath: m_AnchoredPosition.x
-      value: 116
+      value: 120
       objectReference: {fileID: 0}
     - target: {fileID: 224243727428010796, guid: e7694cf5e5b1b9241a80774f3b1e32a5,
         type: 2}
       propertyPath: m_AnchoredPosition.y
-      value: 106
+      value: 120
       objectReference: {fileID: 0}
     - target: {fileID: 224243727428010796, guid: e7694cf5e5b1b9241a80774f3b1e32a5,
         type: 2}

@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using System.IO;
+using GooglePlayGames;
+using GooglePlayGames.BasicApi;
 using UnityEngine.SceneManagement;
 
 public class MainMenu : MonoBehaviour {
@@ -38,7 +40,24 @@ public class MainMenu : MonoBehaviour {
         }
         else ShowMainMenu();
         FirebaseManager.onFilesDownloaded += ShowMainMenu;
-        FirebaseManager.onFilesDownloaded += ReloadLevels;      
+        FirebaseManager.onFilesDownloaded += ReloadLevels;
+        LogIn();
+    }
+
+    void LogIn()
+    {
+        if (FirebaseManager.GoogleConfigDone == false)
+        {
+            PlayGamesPlatform.InitializeInstance(FirebaseManager.config);
+            PlayGamesPlatform.Activate();
+            PlayGamesPlatform.Instance.Authenticate((bool success) => {
+                if (success)
+                {
+                    FirebaseManager.GoogleConfigDone = true;
+                    FirebaseManager.FirebaseLogin();
+                }
+            });
+        }
     }
 
     void ShowDownloadScreen()

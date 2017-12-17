@@ -22,8 +22,20 @@ public class GameManager : MonoBehaviour{
     public Button resumeButton;
     public GameObject mainMenu;
 
+    public Slider joySizer;
+    private float joyBkgSize = 512, joyButtonSize = 175;
+
 	// Use this for initialization
 	void Start () {
+        if (PlayerPrefs.HasKey("Joy Size Multiplier"))
+        {
+            float mult = PlayerPrefs.GetFloat("Joy Size Multiplier");
+            Vector2 bkgSize = new Vector2(joyBkgSize * mult, joyBkgSize * mult);
+            Vector2 btnSize = new Vector2(joyButtonSize * mult, joyButtonSize * mult);
+
+            joystick.GetComponent<RectTransform>().sizeDelta = bkgSize;
+            joystick.transform.GetChild(0).GetComponent<RectTransform>().sizeDelta = btnSize;
+        }
         _Instance = this;
         bgmSounds = Resources.LoadAll<AudioClip>("Sounds/BGM");
         bgmPlayer = GetComponent<AudioSource>();
@@ -34,6 +46,11 @@ public class GameManager : MonoBehaviour{
             optionsButton.onClick.AddListener(delegate
             {
                 mainMenu.SetActive(true);
+                if (PlayerPrefs.HasKey("Joy Size Multiplier"))
+                {
+                    joySizer.value = PlayerPrefs.GetFloat("Joy Size Multiplier");
+                }
+                else joySizer.value = joystick.GetComponent<RectTransform>().sizeDelta.x / joyBkgSize;
             });
             mainMenuButton.onClick.AddListener(delegate
             {
@@ -42,6 +59,17 @@ public class GameManager : MonoBehaviour{
             resumeButton.onClick.AddListener(delegate
             {
                 mainMenu.SetActive(false);
+            });
+            joySizer.onValueChanged.AddListener(delegate
+            {
+                Vector2 bkgSize = new Vector2(joyBkgSize * joySizer.value, joyBkgSize * joySizer.value);
+                Vector2 btnSize = new Vector2(joyButtonSize * joySizer.value, joyButtonSize * joySizer.value);
+
+                joystick.GetComponent<RectTransform>().sizeDelta = bkgSize;
+                joystick.transform.GetChild(0).GetComponent<RectTransform>().sizeDelta = btnSize;
+
+                PlayerPrefs.SetFloat("Joy Size Multiplier", joySizer.value);
+                PlayerPrefs.Save();
             });
         }
         GenerateGrid();
@@ -53,6 +81,10 @@ public class GameManager : MonoBehaviour{
         if (isInGame)
         {
             PlayMusic();
+            if (FirebaseManager.user != null)
+            {
+                Debug.Log(FirebaseManager.user.UserId);
+            }
         }
 
         if (Input.GetKeyDown(KeyCode.Space))
