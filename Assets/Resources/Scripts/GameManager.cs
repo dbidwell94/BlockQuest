@@ -5,6 +5,7 @@ using UnityEngine.SceneManagement;
 using Firebase.Auth;
 using System.IO;
 using UnityEngine.UI;
+using System;
 
 public class GameManager : MonoBehaviour{
 
@@ -23,7 +24,10 @@ public class GameManager : MonoBehaviour{
     public GameObject mainMenu;
 
     public Slider joySizer;
+    public Slider joySensitivity;
+    public Toggle joyToggle;
     private float joyBkgSize = 512, joyButtonSize = 175;
+    private DateTime timeStarted;
 
 	// Use this for initialization
 	void Start () {
@@ -41,6 +45,7 @@ public class GameManager : MonoBehaviour{
         bgmPlayer = GetComponent<AudioSource>();
         if (SceneManager.GetActiveScene() == SceneManager.GetSceneByName("MainGame"))
         {
+            timeStarted = DateTime.Now;
             isInGame = true;
             LoadLevel(LevelManager.levelToLoad);
             optionsButton.onClick.AddListener(delegate
@@ -51,9 +56,18 @@ public class GameManager : MonoBehaviour{
                     joySizer.value = PlayerPrefs.GetFloat("Joy Size Multiplier");
                 }
                 else joySizer.value = joystick.GetComponent<RectTransform>().sizeDelta.x / joyBkgSize;
+                if (PlayerPrefs.HasKey("Joystick Sensitivity"))
+                {
+                    joySensitivity.value = PlayerPrefs.GetFloat("Joystick Sensitivity");
+                }
+                if (PlayerPrefs.HasKey("Joystick Active"))
+                {
+                    joyToggle.isOn = (PlayerPrefs.GetString("Joystick Active") == "yes") ? true : false;
+                }
             });
             mainMenuButton.onClick.AddListener(delegate
             {
+                GooglePlayGames.PlayGamesPlatform.Instance.ReportScore((DateTime.Now - timeStarted).Milliseconds, GPGSIds.leaderboard_marathon, (bool success) => { });
                 SceneManager.LoadScene("MainMenu");
             });
             resumeButton.onClick.AddListener(delegate
@@ -71,6 +85,28 @@ public class GameManager : MonoBehaviour{
                 PlayerPrefs.SetFloat("Joy Size Multiplier", joySizer.value);
                 PlayerPrefs.Save();
             });
+            joySensitivity.onValueChanged.AddListener(delegate
+            {
+                PlayerPrefs.SetFloat("Joystick Sensitivity", joySensitivity.value);
+                player.GetComponent<PlayerController>().UpdateSensitivity();
+                PlayerPrefs.Save();
+            });
+            joyToggle.onValueChanged.AddListener(delegate {
+                SelectInputMethod(joyToggle.isOn);
+            });
+            if (PlayerPrefs.HasKey("Joystick Active"))
+            {
+                if (PlayerPrefs.GetString("Joystick Active") == "yes")
+                {
+                    DPad._Instance.gameObject.SetActive(false);
+                    joystick.gameObject.SetActive(true);
+                }
+                else if (PlayerPrefs.GetString("Joystick Active") == "no")
+                {
+                    DPad._Instance.gameObject.SetActive(true);
+                    joystick.gameObject.SetActive(false);
+                }
+            }
         }
         GenerateGrid();
         
@@ -83,13 +119,17 @@ public class GameManager : MonoBehaviour{
             PlayMusic();
             if (FirebaseManager.user != null)
             {
-                Debug.Log(FirebaseManager.user.UserId);
+                TimeSpan timePlayed = DateTime.Now - timeStarted;
+                if (timePlayed.Minutes >= 5)
+                {
+                    GooglePlayGames.PlayGamesPlatform.Instance.ReportProgress(GPGSIds.achievement_5_minute_man, 100.0, (bool success) => { });
+                }
             }
         }
 
         if (Input.GetKeyDown(KeyCode.Space))
         {
-            Texture2D goodPic = Screenshot.Capture(GameObject.Find("Main Camera").GetComponent<Camera>(), 1024, 500);
+            Texture2D goodPic = Screenshot.Capture(GameObject.Find("Main Camera").GetComponent<Camera>(), 2880, 1440);
             byte[] toSave = goodPic.EncodeToJPG();
             File.WriteAllBytes(Application.persistentDataPath + "/screenshot.jpg", toSave);
         }
@@ -99,8 +139,13 @@ public class GameManager : MonoBehaviour{
     {
         if (bgmPlayer.isPlaying == false)
         {
-            bgmPlayer.PlayOneShot(bgmSounds[Random.Range(0, bgmSounds.Length - 1)]);
+            bgmPlayer.PlayOneShot(bgmSounds[UnityEngine.Random.Range(0, bgmSounds.Length - 1)]);
         }
+    }
+
+    private void OnApplicationQuit()
+    {
+        GooglePlayGames.PlayGamesPlatform.Instance.ReportScore((DateTime.Now - timeStarted).Milliseconds, GPGSIds.leaderboard_marathon, (bool success) => { });
     }
 
     void LoadLevel(LevelManager.Level level)
@@ -177,7 +222,26 @@ public class GameManager : MonoBehaviour{
         goalNum--;
         if (goalNum <= 0)
         {
-            LoadLevel(LevelManager.Levels[Random.Range(0, LevelManager.Levels.Count - 1)]);
+            LoadLevel(LevelManager.Levels[UnityEngine.Random.Range(0, LevelManager.Levels.Count - 1)]);
         }
+    }
+
+    void SelectInputMethod(bool isJoystick)
+    {
+        string active = null;
+        if (isJoystick)
+        {
+            joystick.gameObject.SetActive(true);
+            DPad._Instance.gameObject.SetActive(false);
+            active = "yes";
+        }
+        else if (!isJoystick)
+        {
+            joystick.gameObject.SetActive(false);
+            DPad._Instance.gameObject.SetActive(true);
+            active = "no";
+        }
+        PlayerPrefs.SetString("Joystick Active", active);
+        PlayerPrefs.Save();
     }
 }

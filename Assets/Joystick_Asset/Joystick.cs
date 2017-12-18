@@ -16,6 +16,7 @@ public class Joystick : MonoBehaviour, IDragHandler, IPointerDownHandler, IPoint
     private Vector3 tempPoint;
     private Canvas joystickCanvas;
     private Camera mainCam;
+    public static Joystick _Instance;
 
     public void Start()
     {
@@ -29,6 +30,7 @@ public class Joystick : MonoBehaviour, IDragHandler, IPointerDownHandler, IPoint
         deadzone = .05f;
         joystickCanvas = GetComponentInParent<Canvas>();
         mainCam = Camera.main;
+        _Instance = this;
     }
 
     public virtual void OnDrag(PointerEventData ped)

@@ -9,12 +9,17 @@ public class PlayerController : MonoBehaviour {
     private Vector3 playerPosRounded, playerPos;
     private GameObject player;
 
+    public float sensitivity;
+
 	// Use this for initialization
 	void Start () {
         playerPosRounded = new Vector3(transform.position.x, transform.localScale.y / 2, transform.position.z);
         playerPos = playerPosRounded;
         playerStartPos = playerPosRounded;
         player = this.gameObject;
+        sensitivity = (PlayerPrefs.HasKey("Joystick Sensitivity")) ?
+            sensitivity = PlayerPrefs.GetFloat("Joystick Sensitivity") :
+            sensitivity = 1f;
 	}
 	
 	// Update is called once per frame
@@ -26,8 +31,9 @@ public class PlayerController : MonoBehaviour {
     {
         if (player.transform.position == playerPosRounded)
         {
-            Vector3 joystickMove = new Vector3(Joystick.JoystickOutput.x, 0, Joystick.JoystickOutput.y);
-            Vector3 moveTo = player.transform.position + joystickMove;
+            Vector3 joystickMove = (new Vector3(Joystick.JoystickOutput.x, 0, Joystick.JoystickOutput.y)) * sensitivity;          
+            joystickMove = (joystickMove.magnitude > 1) ? joystickMove = joystickMove.normalized : joystickMove;
+            Vector3 moveTo = (player.transform.position + joystickMove) + DPad._Instance.DPadOutput;
             Vector3 Direction = moveTo - player.transform.position;
             Ray ray = new Ray(player.transform.position, Direction);
             if (!Physics.Raycast(ray, Mathf.Round(Direction.magnitude)))
@@ -63,5 +69,12 @@ public class PlayerController : MonoBehaviour {
         {
             GameManager._Instance.HitGoal(other.gameObject);
         }
+    }
+
+    public void UpdateSensitivity()
+    {
+        sensitivity = (PlayerPrefs.HasKey("Joystick Sensitivity")) ?
+            sensitivity = PlayerPrefs.GetFloat("Joystick Sensitivity") :
+            sensitivity = 1f;
     }
 }
