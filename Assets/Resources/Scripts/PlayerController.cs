@@ -8,11 +8,15 @@ public class PlayerController : MonoBehaviour {
     private Vector3 playerStartPos;
     private Vector3 playerPosRounded, playerPos;
     private GameObject player;
-
+    public GameObject deathParts;
+    public GameObject camHolder, sun1Holder, sun2Holder, sun1, sun2;
+    private bool isDead = false;
+    private int levelDeathCount;
     public float sensitivity;
 
 	// Use this for initialization
 	void Start () {
+        levelDeathCount = 0;
         playerPosRounded = new Vector3(transform.position.x, transform.localScale.y / 2, transform.position.z);
         playerPos = playerPosRounded;
         playerStartPos = playerPosRounded;
@@ -24,7 +28,27 @@ public class PlayerController : MonoBehaviour {
 	
 	// Update is called once per frame
 	void Update () {
-        MovePlayer();
+        if (!isDead)
+        {
+            MovePlayer();
+        }
+        if (isDead)
+        {
+            if (GameObject.Find("deathparts") == null)
+            {
+                isDead = false;
+                player.transform.position = playerStartPos;
+                playerPos = playerStartPos;
+                playerPosRounded = playerStartPos;
+                this.GetComponent<MeshRenderer>().enabled = true;
+                this.GetComponent<BoxCollider>().isTrigger = false;
+                this.GetComponent<Rigidbody>().useGravity = true;
+            }
+        }
+        if (levelDeathCount >= 10)
+        {
+            GooglePlayGames.PlayGamesPlatform.Instance.ReportProgress(GPGSIds.achievement_persistent, 100, (bool success) => { });
+        }
 	}
 
     void MovePlayer()
@@ -48,18 +72,28 @@ public class PlayerController : MonoBehaviour {
 
     public void RefreshSpawn(Vector3 spawnLoc)
     {
+        levelDeathCount = 0;
         playerPosRounded = new Vector3(transform.position.x, transform.localScale.y / 2, transform.position.z);
         playerPos = playerPosRounded;
         playerStartPos = playerPosRounded;
+    }
+
+    void Die()
+    {
+        levelDeathCount++;
+        isDead = true;
+        GameObject parts = Instantiate(deathParts, this.transform.position, new Quaternion());
+        parts.name = "deathparts";
+        this.GetComponent<BoxCollider>().isTrigger = true;
+        this.GetComponent<Rigidbody>().useGravity = false;
+        this.GetComponent<MeshRenderer>().enabled = false;
     }
 
     private void OnCollisionEnter(Collision collision)
     {
         if (collision.transform.tag == "Enemy")
         {
-            player.transform.position = playerStartPos;
-            playerPos = playerStartPos;
-            playerPosRounded = playerStartPos;
+            Die();
         }
     }
 

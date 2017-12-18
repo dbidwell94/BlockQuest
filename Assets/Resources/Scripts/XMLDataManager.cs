@@ -122,7 +122,7 @@ public static class XMLDataLoaderSaver
 public static class FirebaseManager
 {
     // IMPORTANT!! Modify this variable according to dev or user build!!
-    private static string saveLoc = "User_Levels";
+    private static string saveLoc = "Default_Levels";
 
     public static int filesToDownload;
     public static int filesLeft;
