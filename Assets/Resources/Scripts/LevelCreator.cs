@@ -31,6 +31,7 @@ public class LevelCreator : MonoBehaviour {
     public GameObject levelButton;
     private List<GameObject> currentLevelButtons;
     private LevelManager.Level levelToLoad;
+    public GameObject levelOptionsMenu;
 
     private Vector3 cameraPos;
 
@@ -76,6 +77,7 @@ public class LevelCreator : MonoBehaviour {
                 optionsMenu.SetActive(false);
                 selectObjectButton.interactable = true;
             }
+            if (botSelectMenu.activeInHierarchy) botSelectMenu.SetActive(false);
         });
         clearButton.onClick.AddListener(delegate { ClearLevel(); });
         saveDialogButton.onClick.AddListener(delegate
@@ -101,6 +103,30 @@ public class LevelCreator : MonoBehaviour {
         });
         loadButton.onClick.AddListener(ShowLevelMenu);
         cameraPos = Camera.main.transform.position;
+        levelOptionsMenu.transform.GetChild(0).GetComponent<Button>().onClick.AddListener(delegate {
+            FirebaseManager.UploadFileToFirebase(levelToLoad);
+            levelOptionsMenu.SetActive(false);
+            selectObjectButton.interactable = true;
+            optionsButton.interactable = true;
+        });
+        levelOptionsMenu.transform.GetChild(1).GetComponent<Button>().onClick.AddListener(delegate {
+            LoadLevel();
+            levelOptionsMenu.SetActive(false);
+            selectObjectButton.interactable = true;
+            optionsButton.interactable = true;
+        });
+        levelOptionsMenu.transform.GetChild(2).GetComponent<Button>().onClick.AddListener(delegate {
+            LevelManager.DeleteLevel(levelToLoad);
+            levelOptionsMenu.SetActive(false);
+            selectObjectButton.interactable = true;
+            optionsButton.interactable = true;
+        });
+        loadLevelPanel.transform.GetChild(2).GetComponent<Button>().onClick.AddListener(delegate {
+            loadLevelPanel.SetActive(false);
+            optionsShowing = false;
+            optionsButton.interactable = true;
+            selectObjectButton.interactable = true;
+        });
     }
 
     void SelectObjectToDrag(GameObject obj)
@@ -168,6 +194,7 @@ public class LevelCreator : MonoBehaviour {
         ClearObjectToSpawn();
         selectObjectButton.interactable = false;
         objectMenu.SetActive(true);
+        if (botSelectMenu.activeInHierarchy) botSelectMenu.SetActive(false);
     }
 
     void MoveObject()
@@ -265,7 +292,9 @@ public class LevelCreator : MonoBehaviour {
             players.Clear();
             walls.Clear();
             goals.Clear();
-        }        
+        }
+        selectBotButton.interactable = false;
+        playerButton.interactable = true;
     }
 
     // serializes the objects in the scene into an xml file
@@ -363,13 +392,24 @@ public class LevelCreator : MonoBehaviour {
 
     void ShowLevelMenu()
     {
+        optionsShowing = false;
+        optionsButton.interactable = false;
+        if (currentLevelButtons.Count > 0)
+        {
+            foreach (GameObject obj in currentLevelButtons)
+            {
+                Destroy(obj);
+            }
+            currentLevelButtons = new List<GameObject>();
+            
+        }
         optionsMenu.SetActive(false);
         loadLevelPanel.SetActive(true);
         GameObject levelsContainer = loadLevelPanel.transform.GetChild(1).transform.GetChild(0).transform.GetChild(0).gameObject;
         foreach (LevelManager.Level level in LevelManager.Levels)
         {
             GameObject newButton = Instantiate(levelButton);
-            levelsContainer.GetComponent<RectTransform>().sizeDelta += new Vector2(0, newButton.GetComponent<RectTransform>().sizeDelta.y);
+            //levelsContainer.GetComponent<RectTransform>().sizeDelta += new Vector2(0, newButton.GetComponent<RectTransform>().sizeDelta.y);
             newButton.transform.SetParent(levelsContainer.transform);
             newButton.GetComponent<RectTransform>().localScale = new Vector3(1, 1, 1);
             Sprite screenshot = Sprite.Create(level.LevelPic, new Rect(0, 0, level.LevelPic.width, level.LevelPic.height), new Vector2());
@@ -378,10 +418,17 @@ public class LevelCreator : MonoBehaviour {
             newButton.GetComponent<Button>().onClick.AddListener(delegate
             {
                 levelToLoad = level;
-                LoadLevel();
-                // Show level options (delete, upload, edit)
+                loadLevelPanel.SetActive(false);
+                levelOptionsMenu.SetActive(true);
             });
             currentLevelButtons.Add(newButton);
+        }
+        if (currentLevelButtons.Count > 0)
+        {
+            RectTransform buttonTrans = currentLevelButtons[0].GetComponent<RectTransform>();
+            float scale = Screen.height / Screen.width;
+            float ySize = buttonTrans.sizeDelta.y * currentLevelButtons.Count;
+            levelsContainer.GetComponent<RectTransform>().SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, ySize);
         }
     }
 
@@ -456,6 +503,7 @@ public class LevelCreator : MonoBehaviour {
                 playerButton.interactable = true;
             }
             if (goals.ContainsKey(keyLoc)) goals.Remove(keyLoc);
+            if (botList.Contains(allObjects[keyLoc])) botList.Remove(allObjects[keyLoc]);
             Destroy(allObjects[keyLoc]);
             allObjects.Remove(keyLoc);
         }

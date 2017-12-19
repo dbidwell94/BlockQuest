@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using System;
+using System.IO;
 
 public static class LevelManager {
 
@@ -52,6 +53,15 @@ public static class LevelManager {
     {
         RebuildLists();
         OnLevelsChanged();
+    }
+
+    public static void DeleteLevel(Level level)
+    {
+        if (Directory.Exists(XMLDataLoaderSaver.savePath + level.LevelName))
+        {
+            Directory.Delete(XMLDataLoaderSaver.savePath + level.LevelName, true);
+            RebuildLists();
+        }
     }
 }
 
