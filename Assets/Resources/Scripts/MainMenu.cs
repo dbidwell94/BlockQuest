@@ -124,10 +124,6 @@ public class MainMenu : MonoBehaviour {
                     LoadLevel(level);
                     loadingScreen.SetActive(true);
                 });
-                newButton.transform.GetChild(2).GetComponent<Button>().onClick.AddListener(delegate
-                {
-                    FirebaseManager.UploadFileToFirebase(level);
-                });
                 currentLevelButtons.Add(newButton);
             }
         }

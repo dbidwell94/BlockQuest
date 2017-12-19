@@ -6,8 +6,8 @@ using System.IO;
 
 public class LevelCreator : MonoBehaviour {
 
-    public GameObject bot, player, wall, goal, patrolPoint;
-    public Button botButton, playerButton, wallButton, goalButton, selectObjectButton, spawnButton;
+    public GameObject bot, player, wall, goal, patrolPoint, delete;
+    public Button botButton, playerButton, wallButton, goalButton, deleteButton, selectObjectButton, spawnButton;
     public Button mainMenuButton, saveDialogButton, loadButton, clearButton, optionsButton, selectBotButton;
     public GameObject saveDialog;
     public Button saveButton;
@@ -27,11 +27,16 @@ public class LevelCreator : MonoBehaviour {
     private Dictionary<GameObject, List<Vector3>> botsWithPPoints;
     private GameObject selectedBot;
     private List<GameObject> selectedBotPPoints;
+    public GameObject loadLevelPanel;
+    public GameObject levelButton;
+    private List<GameObject> currentLevelButtons;
+    private LevelManager.Level levelToLoad;
 
     private Vector3 cameraPos;
 
     private void Start()
     {
+        currentLevelButtons = new List<GameObject>();
         selectedBotPPoints = new List<GameObject>();
         selectBotButton.interactable = false;
         bots = new Dictionary<Vector3, GameObject>();
@@ -48,6 +53,7 @@ public class LevelCreator : MonoBehaviour {
         playerButton.onClick.AddListener(delegate { SelectObjectToDrag(player); });
         wallButton.onClick.AddListener(delegate { SelectObjectToDrag(wall); });
         goalButton.onClick.AddListener(delegate { SelectObjectToDrag(goal); });
+        deleteButton.onClick.AddListener(delegate { SelectObjectToDrag(delete); });
         spawnButton.onClick.AddListener(delegate { PlaceObject(objectToSpawn); });
         mainMenuButton.onClick.AddListener(delegate { UnityEngine.SceneManagement.SceneManager.LoadScene("MainMenu"); });
         optionsButton.onClick.AddListener(delegate {
@@ -93,12 +99,13 @@ public class LevelCreator : MonoBehaviour {
                 botsWithPPoints.Add(selectedBot, new List<Vector3>());
             }
         });
+        loadButton.onClick.AddListener(ShowLevelMenu);
         cameraPos = Camera.main.transform.position;
     }
 
     void SelectObjectToDrag(GameObject obj)
     {
-        objectToSpawn = Instantiate(obj, new Vector3(0, 1, 0), new Quaternion());
+        objectToSpawn = Instantiate(obj, new Vector3(0, 2.5f, 0), new Quaternion());
         objectToSpawn.name = obj.name;
         objectPos = objectToSpawn.transform.position;
         objectMenu.SetActive(false);
@@ -166,25 +173,26 @@ public class LevelCreator : MonoBehaviour {
     void MoveObject()
     {
         MeshCollider floorCol = floor.GetComponent<MeshCollider>();
-        float x = GameManager._Instance.joystick.JoystickOutput.x * Time.deltaTime * 10;
-        float y = GameManager._Instance.joystick.JoystickOutput.y * Time.deltaTime * 10;
-        Vector3 tempPos = objectPos + new Vector3(x, objectToSpawn.transform.localScale.y, y);
+        float x = DPad._Instance.DPadOutput.x * Time.deltaTime * 10;
+        float z = DPad._Instance.DPadOutput.z * Time.deltaTime * 10;
+        Vector3 tempPos = objectPos + new Vector3(x, 0, z);
         if (tempPos.x >= floorCol.bounds.min.x && tempPos.x <= floorCol.bounds.max.x)
         {
             if (tempPos.z >= floorCol.bounds.min.z && tempPos.z <= floorCol.bounds.max.z)
             {
                 objectPos = tempPos;
-                objectToSpawn.transform.position = new Vector3(Mathf.Round(objectPos.x), 1, Mathf.Round(objectPos.z));
+                objectToSpawn.transform.position = new Vector3(Mathf.Round(objectPos.x), 2.5f, Mathf.Round(objectPos.z));
             }
         }      
     }
+
+    // This method gets called when you press the select button in the level creator
     void PlaceObject(GameObject obj)
     {
         Vector3 toPlace = new Vector3(objectToSpawn.transform.position.x, obj.transform.localScale.y / 2, objectToSpawn.transform.position.z);
-        if (!allObjects.ContainsKey(toPlace))
+        if (!allObjects.ContainsKey(toPlace) && objectToSpawn.name != "Delete Object")
         {
             Camera.main.transform.parent = null;
-            Debug.Log(Camera.main.transform.parent);
             switch (obj.name)
             {
                 default:
@@ -218,6 +226,17 @@ public class LevelCreator : MonoBehaviour {
                     break;
             }
         }
+        if (objectToSpawn.name == "Delete Object")
+        {
+            foreach (KeyValuePair<Vector3, GameObject> del in allObjects)
+            {
+                if (del.Key.x == toPlace.x && del.Key.z == toPlace.z)
+                {
+                    DeleteObject(del.Key);
+                    break;
+                }
+            }
+        }
         if (players.Count >= 1)
         {
             playerButton.interactable = false;
@@ -232,6 +251,7 @@ public class LevelCreator : MonoBehaviour {
         }
     }
 
+    // Clears all current gameobjects in the scene
     void ClearLevel()
     {
         if (allObjects.Count > 0)
@@ -248,6 +268,7 @@ public class LevelCreator : MonoBehaviour {
         }        
     }
 
+    // serializes the objects in the scene into an xml file
     void SaveLevel()
     {
         Camera.main.transform.SetParent(null);
@@ -305,6 +326,7 @@ public class LevelCreator : MonoBehaviour {
         LevelManager.RebuildLists();
     }
 
+    // cycles through the current bots in the scene to select
     void CycleBots()
     {
         ClearObjectToSpawn();
@@ -337,5 +359,105 @@ public class LevelCreator : MonoBehaviour {
         botSelection += 1;
         menuTrans.position = toPut;
 
+    }
+
+    void ShowLevelMenu()
+    {
+        optionsMenu.SetActive(false);
+        loadLevelPanel.SetActive(true);
+        GameObject levelsContainer = loadLevelPanel.transform.GetChild(1).transform.GetChild(0).transform.GetChild(0).gameObject;
+        foreach (LevelManager.Level level in LevelManager.Levels)
+        {
+            GameObject newButton = Instantiate(levelButton);
+            levelsContainer.GetComponent<RectTransform>().sizeDelta += new Vector2(0, newButton.GetComponent<RectTransform>().sizeDelta.y);
+            newButton.transform.SetParent(levelsContainer.transform);
+            newButton.GetComponent<RectTransform>().localScale = new Vector3(1, 1, 1);
+            Sprite screenshot = Sprite.Create(level.LevelPic, new Rect(0, 0, level.LevelPic.width, level.LevelPic.height), new Vector2());
+            newButton.transform.GetChild(0).GetComponent<Image>().sprite = screenshot;
+            newButton.GetComponentInChildren<Text>().text = level.LevelName;
+            newButton.GetComponent<Button>().onClick.AddListener(delegate
+            {
+                levelToLoad = level;
+                LoadLevel();
+                // Show level options (delete, upload, edit)
+            });
+            currentLevelButtons.Add(newButton);
+        }
+    }
+
+    void LoadLevel()
+    {
+        if (levelToLoad.LevelPath != null)
+        {
+            loadLevelPanel.SetActive(false);
+            ClearLevel();
+            playerButton.interactable = true;
+            XMLDataManager container;
+            XMLDataLoaderSaver.Load(levelToLoad, out container);
+            foreach (XMLDataManager.Bot b in container.bots)
+            {
+                GameObject newBot = Instantiate(bot, b.location, new Quaternion());
+                bots.Add(newBot.transform.position, newBot);
+                if (b.pPoints != null)
+                {
+                    List<Vector3> botPPoints = new List<Vector3>();
+                    foreach (Vector3 point in b.pPoints)
+                    {
+                        botPPoints.Add(point);
+                    }
+                    if (botsWithPPoints == null)
+                    {
+                        botsWithPPoints = new Dictionary<GameObject, List<Vector3>>();
+                    }
+                    botsWithPPoints.Add(newBot, botPPoints);
+                }
+                botList.Add(newBot);
+                allObjects.Add(newBot.transform.position, newBot);
+                selectBotButton.interactable = true;
+            }
+            foreach (XMLDataManager.Goal g in container.goals)
+            {
+                GameObject newGoal = Instantiate(goal, g.loc, new Quaternion());
+                goals.Add(newGoal.transform.position, newGoal);
+                allObjects.Add(newGoal.transform.position, newGoal);
+            }
+            foreach (XMLDataManager.Wall w in container.walls)
+            {
+                GameObject newWall = Instantiate(wall, w.loc, new Quaternion());
+                walls.Add(newWall.transform.position, newWall);
+                allObjects.Add(newWall.transform.position, newWall);
+            }
+            if (container.player.loc != null)
+            {
+                GameObject newPlayer = Instantiate(player, container.player.loc, new Quaternion());
+                allObjects.Add(newPlayer.transform.position, newPlayer);
+                players.Add(newPlayer.transform.position, newPlayer);
+                playerButton.interactable = false;
+            }
+        }
+        optionsShowing = false;
+        selectObjectButton.interactable = true;
+    }
+
+    void DeleteObject(Vector3 keyLoc)
+    {
+        if (allObjects.ContainsKey(keyLoc))
+        {
+            if (botsWithPPoints.ContainsKey(allObjects[keyLoc])) botsWithPPoints.Remove(allObjects[keyLoc]);
+            if (bots.ContainsKey(keyLoc))
+            {
+                bots.Remove(keyLoc);
+                if (bots.Count <= 0) selectBotButton.interactable = false;
+            }
+            if (walls.ContainsKey(keyLoc)) walls.Remove(keyLoc);
+            if (players.ContainsKey(keyLoc))
+            {
+                players.Remove(keyLoc);
+                playerButton.interactable = true;
+            }
+            if (goals.ContainsKey(keyLoc)) goals.Remove(keyLoc);
+            Destroy(allObjects[keyLoc]);
+            allObjects.Remove(keyLoc);
+        }
     }
 }

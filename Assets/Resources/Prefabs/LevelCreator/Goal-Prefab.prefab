@@ -22,7 +22,7 @@ GameObject:
   - component: {fileID: 33489646636187174}
   - component: {fileID: 65904406489596332}
   - component: {fileID: 23875228793524170}
-  m_Layer: 2
+  m_Layer: 0
   m_Name: Goal-Prefab
   m_TagString: Goal
   m_Icon: {fileID: 0}

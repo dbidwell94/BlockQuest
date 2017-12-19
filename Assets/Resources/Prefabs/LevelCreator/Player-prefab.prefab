@@ -22,7 +22,7 @@ GameObject:
   - component: {fileID: 33040515780120666}
   - component: {fileID: 65574613454043194}
   - component: {fileID: 23923804336389724}
-  m_Layer: 2
+  m_Layer: 0
   m_Name: Player-prefab
   m_TagString: Player
   m_Icon: {fileID: 0}

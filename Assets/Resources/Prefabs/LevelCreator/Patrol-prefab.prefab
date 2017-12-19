@@ -22,7 +22,7 @@ GameObject:
   - component: {fileID: 33581036451047520}
   - component: {fileID: 65118264269142302}
   - component: {fileID: 23874130212028112}
-  m_Layer: 2
+  m_Layer: 0
   m_Name: Patrol-prefab
   m_TagString: Enemy
   m_Icon: {fileID: 0}
