@@ -488,22 +488,23 @@ public class LevelCreator : MonoBehaviour {
 
     void DeleteObject(Vector3 keyLoc)
     {
-        if (allObjects.ContainsKey(keyLoc))
+        if (allObjects.Count > 0 && allObjects.ContainsKey(keyLoc))
         {
-            if (botsWithPPoints.ContainsKey(allObjects[keyLoc])) botsWithPPoints.Remove(allObjects[keyLoc]);
-            if (bots.ContainsKey(keyLoc))
+            
+            if (botsWithPPoints != null && botsWithPPoints.ContainsKey(allObjects[keyLoc])) botsWithPPoints.Remove(allObjects[keyLoc]);
+            if (bots != null && bots.ContainsKey(keyLoc))
             {
                 bots.Remove(keyLoc);
                 if (bots.Count <= 0) selectBotButton.interactable = false;
             }
-            if (walls.ContainsKey(keyLoc)) walls.Remove(keyLoc);
-            if (players.ContainsKey(keyLoc))
+            if (walls != null && walls.ContainsKey(keyLoc)) walls.Remove(keyLoc);
+            if (players != null && players.ContainsKey(keyLoc))
             {
                 players.Remove(keyLoc);
                 playerButton.interactable = true;
             }
-            if (goals.ContainsKey(keyLoc)) goals.Remove(keyLoc);
-            if (botList.Contains(allObjects[keyLoc])) botList.Remove(allObjects[keyLoc]);
+            if (goals != null && goals.ContainsKey(keyLoc)) goals.Remove(keyLoc);
+            if (botList != null && botList.Contains(allObjects[keyLoc])) botList.Remove(allObjects[keyLoc]);
             Destroy(allObjects[keyLoc]);
             allObjects.Remove(keyLoc);
         }
