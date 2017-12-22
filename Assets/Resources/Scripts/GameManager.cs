@@ -22,6 +22,7 @@ public class GameManager : MonoBehaviour{
     public Button mainMenuButton;
     public Button resumeButton;
     public GameObject mainMenu;
+    public Material floorMat;
 
     public Slider joySizer;
     public Slider joySensitivity;
@@ -108,8 +109,7 @@ public class GameManager : MonoBehaviour{
                 }
             }
         }
-        GenerateGrid();
-        
+        GenerateGrid();       
     }
 	
 	// Update is called once per frame
@@ -171,7 +171,7 @@ public class GameManager : MonoBehaviour{
         }
         foreach (XMLDataManager.Goal g in container.goals)
         {
-            GameObject temp = Instantiate(goal, g.loc, new Quaternion());
+            GameObject temp = Instantiate(goal, new Vector3(g.loc.x, .5f, g.loc.z), new Quaternion());
             currentGameObjects.Add(temp);
         }
         player.transform.position = container.player.loc + new Vector3(0, 2, 0);
@@ -211,9 +211,16 @@ public class GameManager : MonoBehaviour{
         }
         MeshRenderer floorRenderer = Floor.GetComponent<MeshRenderer>();
         Shader floorShader = floorRenderer.material.shader;
-        floorRenderer.material.mainTexture = gridImage;
-        floorRenderer.material.mainTextureScale = new Vector2(floorCollider.bounds.size.x, floorCollider.bounds.size.z);
-        floorRenderer.material.mainTextureOffset = new Vector2(.5f, .5f);
+        if (!isInGame)
+        {
+            floorRenderer.material.mainTexture = gridImage;
+            floorRenderer.material.mainTextureOffset = new Vector2(.5f, .5f);
+            floorRenderer.material.mainTextureScale = new Vector2(floorCollider.bounds.size.x, floorCollider.bounds.size.z);
+        }
+        else {
+            floorRenderer.material = floorMat;
+            floorRenderer.material.mainTextureScale = new Vector2(floorCollider.bounds.size.x / 2, floorCollider.bounds.size.z / 2);
+        }
     }
 
     public void HitGoal(GameObject goal)

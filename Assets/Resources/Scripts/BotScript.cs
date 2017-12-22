@@ -12,6 +12,7 @@ public class BotScript : MonoBehaviour {
     private float maxIntensity;
     private bool lightSwitch;
     private Vector3 toGo;
+    private Animator botAnimation;
 
 	// Use this for initialization
 	void Start () {
@@ -47,7 +48,7 @@ public class BotScript : MonoBehaviour {
         if (patrolPoints != null)
         {
             Patrol();
-        }
+        }      
 	}
 
     void Breathe()

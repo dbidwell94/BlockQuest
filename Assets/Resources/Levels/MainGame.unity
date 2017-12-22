@@ -290,13 +290,14 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   joystick: {fileID: 120740661}
   player: {fileID: 1946850412}
-  bot: {fileID: 1721250637691668, guid: ed9bebdbcd2644a42a83f307186d029b, type: 2}
+  bot: {fileID: 1897626907618882, guid: a0d099e230aabe949886998f22e14d08, type: 2}
   wall: {fileID: 1495587902411410, guid: 138f4c3b6e0b6334ab1365e76d0a532e, type: 2}
-  goal: {fileID: 1547671446235856, guid: a27e348f657498945aadf6ed8864b39b, type: 2}
+  goal: {fileID: 158008, guid: 4d7cade01d366e7458905879e0874956, type: 2}
   optionsButton: {fileID: 312549985}
   mainMenuButton: {fileID: 751359230}
   resumeButton: {fileID: 1134816366}
   mainMenu: {fileID: 847222352}
+  floorMat: {fileID: 2100000, guid: 401ad4983cc206c4f923a26dd2542db1, type: 2}
   joySizer: {fileID: 1075748502}
   joySensitivity: {fileID: 1078205132}
   joyToggle: {fileID: 1394972884}
@@ -3253,7 +3254,7 @@ MeshRenderer:
   m_LightProbeUsage: 1
   m_ReflectionProbeUsage: 1
   m_Materials:
-  - {fileID: 2100000, guid: 39d7e964b679f9d43b26cfaf1d4f0181, type: 2}
+  - {fileID: 2100000, guid: bdadbd86e36176342bd968015867f5e5, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
