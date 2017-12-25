@@ -123,7 +123,7 @@ PlayerSettings:
     16:10: 1
     16:9: 1
     Others: 1
-  bundleVersion: v2.1
+  bundleVersion: v2.35
   preloadedAssets: []
   metroInputSource: 0
   m_HolographicPauseOnTrackingLoss: 1
@@ -146,7 +146,7 @@ PlayerSettings:
     Android: com.BigGames.BlockQuest
     Standalone: com.biggames.blockquest
   buildNumber: {}
-  AndroidBundleVersionCode: 33
+  AndroidBundleVersionCode: 37
   AndroidMinSdkVersion: 22
   AndroidTargetSdkVersion: 0
   AndroidPreferredInstallLocation: 0
@@ -235,7 +235,7 @@ PlayerSettings:
   - m_BuildTarget: 
     m_Icons:
     - serializedVersion: 2
-      m_Icon: {fileID: 2800000, guid: 7cd48988de15b5045981a93d87907480, type: 3}
+      m_Icon: {fileID: 2800000, guid: 7eda215377894b04f97019995e45d86c, type: 3}
       m_Width: 128
       m_Height: 128
   m_BuildTargetBatching:

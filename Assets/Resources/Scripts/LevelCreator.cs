@@ -410,7 +410,7 @@ public class LevelCreator : MonoBehaviour {
         optionsMenu.SetActive(false);
         loadLevelPanel.SetActive(true);
         GameObject levelsContainer = loadLevelPanel.transform.GetChild(1).transform.GetChild(0).transform.GetChild(0).gameObject;
-        foreach (LevelManager.Level level in LevelManager.Levels)
+        foreach (LevelManager.Level level in LevelManager.MyLevels)
         {
             GameObject newButton = Instantiate(levelButton);
             //levelsContainer.GetComponent<RectTransform>().sizeDelta += new Vector2(0, newButton.GetComponent<RectTransform>().sizeDelta.y);

@@ -22,15 +22,19 @@ public static class LevelManager {
     }
 
     public static List<Level> Levels = new List<Level>();
+    public static List<Level> MyLevels = new List<Level>();
+    public static List<Level> UsersLevels = new List<Level>();
 
     public static Level levelToLoad;
 
     public static void RebuildLists()
     {
         Levels = new List<Level>();
+        UsersLevels = new List<Level>();
+        MyLevels = new List<Level>();
         try
         {
-            foreach (string file in System.IO.Directory.GetDirectories(Application.persistentDataPath + "/Levels"))
+            foreach (string file in Directory.GetDirectories(Application.persistentDataPath + "/Levels"))
             {
                 string[] picLocation = System.IO.Directory.GetFiles(file, "*.png");
                 string[] levelLocation = System.IO.Directory.GetFiles(file, "*.xml");
@@ -40,6 +44,45 @@ public static class LevelManager {
                 Level level = new Level(System.IO.Path.GetFileNameWithoutExtension(levelLocation[0]), levelLocation[0], screenshotPic);
                 Levels.Add(level);
             }
+            string userName = (FirebaseManager.user == null) ? "Default_User" : FirebaseManager.FormattedUserName;
+            if (Directory.Exists(Application.persistentDataPath + "/UserLevels/" + userName))
+            {
+                foreach (string myLevel in Directory.GetDirectories(Application.persistentDataPath + "/UserLevels/" + userName))
+                {
+                    string[] picLocation = Directory.GetFiles(myLevel, "*.png");
+                    string[] levelLocation = Directory.GetFiles(myLevel, "*.xml");
+                    byte[] picToLoad = File.ReadAllBytes(picLocation[0]);
+                    Texture2D screenshotPic = new Texture2D(256, 256, TextureFormat.RGB24, false);
+                    screenshotPic.LoadImage(picToLoad);
+                    Level level = new Level(Path.GetFileNameWithoutExtension(levelLocation[0]), levelLocation[0], screenshotPic);
+                    MyLevels.Add(level);
+                }
+
+            }
+            if (Directory.Exists(Application.persistentDataPath + "/UserLevels"))
+            {
+                foreach (string author in Directory.GetDirectories(Application.persistentDataPath + "/UserLevels"))
+                {
+                    if (!author.Contains(userName))
+                    {
+                        Debug.Log("true");
+                        foreach (string userLevel in Directory.GetDirectories(author))
+                        {
+                            string[] picLocation = Directory.GetFiles(userLevel, "*.png");
+                            string[] levelLocation = Directory.GetFiles(userLevel, "*.xml");
+                            byte[] picToLoad = File.ReadAllBytes(picLocation[0]);
+                            Texture2D screenshotPic = new Texture2D(256, 256, TextureFormat.RGB24, false);
+                            screenshotPic.LoadImage(picToLoad);
+                            Level level = new Level(Path.GetFileNameWithoutExtension(levelLocation[0]), levelLocation[0], screenshotPic);
+                            UsersLevels.Add(level);
+                        }
+
+                    }
+                }
+
+            }
+            Debug.Log(UsersLevels.Count);
+            OnLevelsChanged();
         }
         catch (Exception)
         {

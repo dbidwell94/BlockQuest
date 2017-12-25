@@ -17,6 +17,7 @@ public class MainMenu : MonoBehaviour {
     public GameObject downloadingScreen;
     public GameObject cloudDataObject;
     public GameObject cloudButton;
+    public GameObject cloudLevelOptions;
     public RectTransform cloudDataHolder;
     public Button loadLevelButton;
     public Button randomLevelButton;
@@ -25,6 +26,7 @@ public class MainMenu : MonoBehaviour {
     public Button quitGame;
     private List<GameObject> currentLevelButtons, currentMyCloudLevels, currentUserCloudLevels;
     private bool myLevels, userLevels;
+    private FirebaseManager.LevelQuery cloudLevelSelected;
 
 	// Use this for initialization
 	void Start () {
@@ -127,9 +129,16 @@ public class MainMenu : MonoBehaviour {
     {
         if (currentMyCloudLevels == null) currentMyCloudLevels = new List<GameObject>();
         GameObject newCloudObject = Instantiate(cloudButton);
+        newCloudObject.GetComponentInChildren<Button>().onClick.AddListener(delegate {
+            cloudDataObject.SetActive(false);
+            cloudLevelOptions.SetActive(true);
+            cloudLevelSelected = FirebaseManager.levelsHolder[FirebaseManager.levelsHolder.Count - 1];
+            ShowCloudLevelOptions(cloudLevelSelected, true);
+        });
         RectTransform cloudTrans = newCloudObject.GetComponent<RectTransform>();
         newCloudObject.transform.SetParent(cloudDataHolder);
         newCloudObject.transform.Find("LevelName").GetComponent<Text>().text = FirebaseManager.levelsHolder[FirebaseManager.levelsHolder.Count - 1].lName;
+        newCloudObject.transform.Find("AuthorName").GetComponent<Text>().text = FirebaseManager.levelsHolder[FirebaseManager.levelsHolder.Count - 1].levelAuthor;
         newCloudObject.transform.Find("Image").GetComponent<Image>().sprite = Sprite.Create(FirebaseManager.levelsHolder[FirebaseManager.levelsHolder.Count - 1].screenshot, new Rect(0, 0, 512, 512), new Vector2());
         cloudTrans.localScale = new Vector3(1, 1, 1);
         currentMyCloudLevels.Add(newCloudObject);
@@ -139,9 +148,16 @@ public class MainMenu : MonoBehaviour {
     {
         if (currentUserCloudLevels == null) currentUserCloudLevels = new List<GameObject>();
         GameObject newCloudObject = Instantiate(cloudButton);
+        newCloudObject.GetComponentInChildren<Button>().onClick.AddListener(delegate {
+            cloudDataObject.SetActive(false);
+            cloudLevelOptions.SetActive(true);
+            cloudLevelSelected = FirebaseManager.levelsHolder[FirebaseManager.levelsHolder.Count - 1];
+            ShowCloudLevelOptions(cloudLevelSelected, false);
+        });
         RectTransform cloudTrans = newCloudObject.GetComponent<RectTransform>();
         newCloudObject.transform.SetParent(cloudDataHolder);
         newCloudObject.transform.Find("LevelName").GetComponent<Text>().text = FirebaseManager.levelsHolder[FirebaseManager.levelsHolder.Count - 1].lName;
+        newCloudObject.transform.Find("AuthorName").GetComponent<Text>().text = FirebaseManager.levelsHolder[FirebaseManager.levelsHolder.Count - 1].levelAuthor;
         newCloudObject.transform.Find("Image").GetComponent<Image>().sprite = Sprite.Create(FirebaseManager.levelsHolder[FirebaseManager.levelsHolder.Count - 1].screenshot, new Rect(0, 0, 512, 512), new Vector2());
         cloudTrans.localScale = new Vector3(1, 1, 1);
         currentUserCloudLevels.Add(newCloudObject);
@@ -191,13 +207,36 @@ public class MainMenu : MonoBehaviour {
     {
         mainMenu.SetActive(false);
         loadLevelMenu.SetActive(true);
+        LevelManager.RebuildLists();
+        if (currentLevelButtons.Count > 0)
+        {
+            foreach (GameObject obj in currentLevelButtons)
+            {
+                Destroy(obj);
+            }
+            currentLevelButtons.Clear();
+        }
 
         if (currentLevelButtons.Count <= 0)
         {
-            foreach (LevelManager.Level level in LevelManager.Levels)
+            foreach (LevelManager.Level level in LevelManager.UsersLevels)
             {
                 GameObject newButton = Instantiate(levelButton);
-                levelsContainer.GetComponent<RectTransform>().sizeDelta += new Vector2(0, newButton.GetComponent<RectTransform>().sizeDelta.y);
+                newButton.transform.SetParent(levelsContainer.transform);
+                newButton.GetComponent<RectTransform>().localScale = new Vector3(1, 1, 1);
+                Sprite screenshot = Sprite.Create(level.LevelPic, new Rect(0, 0, level.LevelPic.width, level.LevelPic.height), new Vector2());
+                newButton.transform.GetChild(0).GetComponent<Image>().sprite = screenshot;
+                newButton.GetComponentInChildren<Text>().text = level.LevelName;
+                newButton.GetComponent<Button>().onClick.AddListener(delegate
+                {
+                    LoadLevel(level);
+                    loadingScreen.SetActive(true);
+                });
+                currentLevelButtons.Add(newButton);
+            }
+            foreach (LevelManager.Level level in LevelManager.MyLevels)
+            {
+                GameObject newButton = Instantiate(levelButton);
                 newButton.transform.SetParent(levelsContainer.transform);
                 newButton.GetComponent<RectTransform>().localScale = new Vector3(1, 1, 1);
                 Sprite screenshot = Sprite.Create(level.LevelPic, new Rect(0, 0, level.LevelPic.width, level.LevelPic.height), new Vector2());
@@ -238,7 +277,20 @@ public class MainMenu : MonoBehaviour {
         }
     }
 
-    
+    void ShowCloudLevelOptions(FirebaseManager.LevelQuery level, bool isMyLevel)
+    {
+        cloudLevelOptions.transform.GetChild(0).GetComponent<Text>().text = level.lName;
+        cloudLevelOptions.transform.GetChild(1).GetComponent<Text>().text = level.levelAuthor;
+        Button downloadButton = cloudLevelOptions.transform.GetChild(2).transform.GetChild(0)
+            .GetComponent<Button>();
+        cloudLevelOptions.transform.GetChild(2).transform.GetChild(1)
+            .GetComponent<Button>().interactable = false;
+        downloadButton.onClick.RemoveAllListeners();
+        downloadButton.onClick.AddListener(delegate { FirebaseManager.DownloadLevel(level);
+            cloudLevelOptions.SetActive(false);
+            ShowMainMenu();
+        });
+    }
 }
 
 public static class Screenshot

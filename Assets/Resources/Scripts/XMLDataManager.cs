@@ -69,7 +69,9 @@ public class XMLDataManager {
 
 public static class XMLDataLoaderSaver
 {
-    public static string savePath = Application.persistentDataPath + "/Levels/";
+    public static string path = Application.persistentDataPath + "/UserLevels/";
+    private static string user = (FirebaseManager.user == null) ? "Default_User" : FirebaseManager.FormattedUserName;
+    public static string savePath = Path.Combine(path, user);
 
     public static void Load(LevelManager.Level level, out XMLDataManager Level_Container)
     {
@@ -138,6 +140,7 @@ public static class FirebaseManager
 
     private static FirebaseAuth auth = FirebaseAuth.DefaultInstance;
     public static FirebaseUser user;
+    public static string FormattedUserName;
     public static bool GoogleConfigDone = false;
     public static PlayGamesClientConfiguration config = new PlayGamesClientConfiguration.Builder()
         .RequestIdToken()
@@ -194,7 +197,7 @@ public static class FirebaseManager
         DatabaseReference data = FirebaseDatabase.DefaultInstance.GetReferenceFromUrl("https://blockquest-a1e16.firebaseio.com/");
 
         StorageReference levelFolder = root.Child(saveLoc);
-        StorageReference userName = levelFolder.Child(user.DisplayName);
+        StorageReference userName = levelFolder.Child(FormattedUserName);
         StorageReference userLevel = userName.Child(level.LevelName);
         StorageReference levelFile = userLevel.Child(level.LevelName + ".xml");
         StorageReference levelPic = userLevel.Child(level.LevelName + ".png");
@@ -203,13 +206,17 @@ public static class FirebaseManager
         levelPic.PutBytesAsync(level.LevelPic.EncodeToPNG());
 
         Level newLevel = new Level(level.LevelName, levelFile.Path, levelPic.Path);
+        Debug.Log(levelFile.Path);
+        Debug.Log(levelPic.Path);
 
-        data.Child(saveLoc).Child(user.DisplayName).Child(level.LevelName).Child("File_Path").SetValueAsync(newLevel.filePath);
-        data.Child(saveLoc).Child(user.DisplayName).Child(level.LevelName).Child("Picture_Path").SetValueAsync(newLevel.picturePath);
+        data.Child(saveLoc).Child(FirebaseManager.FormattedUserName).Child(level.LevelName).Child("File_Path").SetValueAsync(newLevel.filePath);
+        data.Child(saveLoc).Child(FirebaseManager.FormattedUserName).Child(level.LevelName).Child("Picture_Path").SetValueAsync(newLevel.picturePath);
     }
 
     public static void DownloadBaseLevels()
     {
+        string defaultLevelPath = Path.Combine(Application.persistentDataPath, "Levels/");
+
         DatabaseReference data = FirebaseDatabase.DefaultInstance.RootReference;
         data.Child("Default_Levels").GetValueAsync().ContinueWith(x =>
        {
@@ -235,12 +242,12 @@ public static class FirebaseManager
                for (int i = 0; i < fileLocs.Count; i++)
                {
                    filesToDownload += 2;
-                   Directory.CreateDirectory(XMLDataLoaderSaver.savePath + keyNames[i]);
-               root.Child(fileLocs[i]).GetFileAsync(XMLDataLoaderSaver.savePath + keyNames[i] + "/" + keyNames[i] + ".xml").ContinueWith(done => {
+                   Directory.CreateDirectory(defaultLevelPath + keyNames[i]);
+               root.Child(fileLocs[i]).GetFileAsync(defaultLevelPath + keyNames[i] + "/" + keyNames[i] + ".xml").ContinueWith(done => {
                    filesDownloaded += 1;
                    UpdateDownloadProgress();
                });
-                   root.Child(picLocs[i]).GetFileAsync(XMLDataLoaderSaver.savePath + keyNames[i] + "/" + keyNames[i] + ".png").ContinueWith(done2 => {
+                   root.Child(picLocs[i]).GetFileAsync(defaultLevelPath + keyNames[i] + "/" + keyNames[i] + ".png").ContinueWith(done2 => {
                        filesDownloaded += 1;
                        UpdateDownloadProgress();
                    });
@@ -317,6 +324,7 @@ public static class FirebaseManager
         auth.SignInWithCredentialAsync(cred).ContinueWith(done => {
             user = done.Result;
             PlayGamesPlatform.Instance.ReportProgress(GPGSIds.achievement_team_player, 100.0, (bool success) => { });
+            FormattedUserName = (user.DisplayName.Contains(" ")) ? user.DisplayName.Replace(' ', '_') : user.DisplayName;
         });
     }
 
@@ -330,7 +338,7 @@ public static class FirebaseManager
 
         const long maxAllowedSize = 4 * 1024 * 1024;
 
-        FirebaseDatabase.DefaultInstance.RootReference.Child("User_Levels").Child(user.DisplayName).GetValueAsync().ContinueWith(x => {
+        FirebaseDatabase.DefaultInstance.RootReference.Child("User_Levels").Child(FirebaseManager.FormattedUserName).GetValueAsync().ContinueWith(x => {
             foreach (DataSnapshot child in x.Result.Children)
             {
                 string levelName = child.Key;
@@ -344,7 +352,8 @@ public static class FirebaseManager
                         lName = levelName,
                         filePath = filePath,
                         picPath = picPath,
-                        screenshot = screenTex
+                        screenshot = screenTex,
+                        levelAuthor = FirebaseManager.FormattedUserName
                     };
                     levelsHolder.Add(newLevel);
                     onMyFilesCached();
@@ -364,7 +373,7 @@ public static class FirebaseManager
 
             foreach (DataSnapshot item in x.Result.Children)
             {
-                if (user == null || user.DisplayName != item.Key)
+                if (user == null || FormattedUserName != item.Key)
                 {
                     string author = item.Key;
                     Debug.Log(author);
@@ -395,6 +404,26 @@ public static class FirebaseManager
         });
 
 
+    }
+
+    public static void DownloadLevel(LevelQuery level)
+    {
+        string authorDir = Application.persistentDataPath + "/UserLevels/" + level.levelAuthor + "/";
+        string levelDir = Path.Combine(authorDir, level.lName);
+        string fileDir = Path.Combine(levelDir, level.lName + ".xml");
+        string picDir = Path.Combine(levelDir, level.lName + ".png");
+
+        if (!Directory.Exists(authorDir))
+        {
+            Directory.CreateDirectory(authorDir);
+        }
+        if (!Directory.Exists(levelDir))
+        {
+            Directory.CreateDirectory(levelDir);
+        }
+        root.Child(level.filePath).GetFileAsync(fileDir);
+        root.Child(level.picPath).GetFileAsync(picDir);
+        LevelManager.RebuildLists();
     }
 }
 

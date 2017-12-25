@@ -125,11 +125,12 @@ public class GameManager : MonoBehaviour{
                     GooglePlayGames.PlayGamesPlatform.Instance.ReportProgress(GPGSIds.achievement_5_minute_man, 100.0, (bool success) => { });
                 }
             }
+
         }
 
         if (Input.GetKeyDown(KeyCode.Space))
         {
-            Texture2D goodPic = Screenshot.Capture(GameObject.Find("Main Camera").GetComponent<Camera>(), 2880, 1440);
+            Texture2D goodPic = Screenshot.Capture(GameObject.Find("Main Camera").GetComponent<Camera>(), 512, 512);
             byte[] toSave = goodPic.EncodeToJPG();
             File.WriteAllBytes(Application.persistentDataPath + "/screenshot.jpg", toSave);
         }
