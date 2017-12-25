@@ -104,7 +104,11 @@ public class LevelCreator : MonoBehaviour {
         loadButton.onClick.AddListener(ShowLevelMenu);
         cameraPos = Camera.main.transform.position;
         levelOptionsMenu.transform.GetChild(0).GetComponent<Button>().onClick.AddListener(delegate {
-            FirebaseManager.UploadFileToFirebase(levelToLoad);
+            if (FirebaseManager.saveLoc == "Default_Levels")
+            {
+                FirebaseManager.UploadFileToFirebase(levelToLoad);
+            }
+            else FirebaseManager.UserUploadToFirebase(levelToLoad);
             levelOptionsMenu.SetActive(false);
             selectObjectButton.interactable = true;
             optionsButton.interactable = true;

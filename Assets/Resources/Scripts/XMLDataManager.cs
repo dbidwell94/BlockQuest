@@ -122,14 +122,19 @@ public static class XMLDataLoaderSaver
 public static class FirebaseManager
 {
     // IMPORTANT!! Modify this variable according to dev or user build!!
-    private static string saveLoc = "User_Levels";
+    public static string saveLoc = "User_Levels";
 
-    public static int filesToDownload;
-    public static int filesLeft;
-    public static bool filesDownloaded = false;
+    public static float filesToDownload;
+    public static float filesDownloaded;
+    public static float fileRatio = 0f;
+    public static bool filesAreDownloaded = false;
 
     public delegate void fileHandler();
     public static fileHandler onFilesDownloaded;
+    public static fileHandler onMyFilesCached;
+    public static fileHandler onUserFilesCached;
+
+    public static List<LevelQuery> levelsHolder;
 
     private static FirebaseAuth auth = FirebaseAuth.DefaultInstance;
     public static FirebaseUser user;
@@ -150,6 +155,14 @@ public static class FirebaseManager
             filePath = path;
             picturePath = pic;
         }
+    }
+    public struct LevelQuery
+    {
+        public Texture2D screenshot;
+        public string filePath;
+        public string picPath;
+        public string lName;
+        public string levelAuthor;
     }
     private static FirebaseStorage storage = FirebaseStorage.GetInstance("gs://blockquest-a1e16.appspot.com");
     private static StorageReference root = storage.GetReferenceFromUrl("gs://blockquest-a1e16.appspot.com");
@@ -176,10 +189,29 @@ public static class FirebaseManager
         }
     }
 
+    public static void UserUploadToFirebase(LevelManager.Level level)
+    {
+        DatabaseReference data = FirebaseDatabase.DefaultInstance.GetReferenceFromUrl("https://blockquest-a1e16.firebaseio.com/");
+
+        StorageReference levelFolder = root.Child(saveLoc);
+        StorageReference userName = levelFolder.Child(user.DisplayName);
+        StorageReference userLevel = userName.Child(level.LevelName);
+        StorageReference levelFile = userLevel.Child(level.LevelName + ".xml");
+        StorageReference levelPic = userLevel.Child(level.LevelName + ".png");
+
+        levelFile.PutFileAsync(level.LevelPath);
+        levelPic.PutBytesAsync(level.LevelPic.EncodeToPNG());
+
+        Level newLevel = new Level(level.LevelName, levelFile.Path, levelPic.Path);
+
+        data.Child(saveLoc).Child(user.DisplayName).Child(level.LevelName).Child("File_Path").SetValueAsync(newLevel.filePath);
+        data.Child(saveLoc).Child(user.DisplayName).Child(level.LevelName).Child("Picture_Path").SetValueAsync(newLevel.picturePath);
+    }
+
     public static void DownloadBaseLevels()
     {
         DatabaseReference data = FirebaseDatabase.DefaultInstance.RootReference;
-        var snap = data.Child("Default_Levels").GetValueAsync().ContinueWith(x =>
+        data.Child("Default_Levels").GetValueAsync().ContinueWith(x =>
        {
            if (x.IsCompleted)
            {
@@ -203,14 +235,13 @@ public static class FirebaseManager
                for (int i = 0; i < fileLocs.Count; i++)
                {
                    filesToDownload += 2;
-                   filesLeft += 2;
                    Directory.CreateDirectory(XMLDataLoaderSaver.savePath + keyNames[i]);
                root.Child(fileLocs[i]).GetFileAsync(XMLDataLoaderSaver.savePath + keyNames[i] + "/" + keyNames[i] + ".xml").ContinueWith(done => {
-                   filesToDownload -= 1;
+                   filesDownloaded += 1;
                    UpdateDownloadProgress();
                });
                    root.Child(picLocs[i]).GetFileAsync(XMLDataLoaderSaver.savePath + keyNames[i] + "/" + keyNames[i] + ".png").ContinueWith(done2 => {
-                       filesToDownload -= 1;
+                       filesDownloaded += 1;
                        UpdateDownloadProgress();
                    });
                }
@@ -257,7 +288,7 @@ public static class FirebaseManager
                     }
                     else
                     {
-                        filesDownloaded = true;
+                        filesAreDownloaded = true;
                         onFilesDownloaded();
                     }
                 }
@@ -271,11 +302,12 @@ public static class FirebaseManager
 
     public static void UpdateDownloadProgress()
     {
-        if (filesToDownload <= 0)
+        if (filesDownloaded == filesToDownload)
         {
-            filesDownloaded = true;
+            filesAreDownloaded = true;
             onFilesDownloaded();
         }
+        fileRatio = (filesDownloaded == 0) ? 0.1f : filesDownloaded / filesToDownload;
     }
 
     public static void FirebaseLogin()
@@ -286,6 +318,83 @@ public static class FirebaseManager
             user = done.Result;
             PlayGamesPlatform.Instance.ReportProgress(GPGSIds.achievement_team_player, 100.0, (bool success) => { });
         });
+    }
+
+    public static void QueryMyLevels()
+    {
+        if (levelsHolder == null)
+        {
+            levelsHolder = new List<LevelQuery>();
+        }
+        else levelsHolder.Clear();
+
+        const long maxAllowedSize = 4 * 1024 * 1024;
+
+        FirebaseDatabase.DefaultInstance.RootReference.Child("User_Levels").Child(user.DisplayName).GetValueAsync().ContinueWith(x => {
+            foreach (DataSnapshot child in x.Result.Children)
+            {
+                string levelName = child.Key;
+                string filePath = child.Child("File_Path").Value.ToString();
+                string picPath = child.Child("Picture_Path").Value.ToString();
+                root.Child(picPath).GetBytesAsync(maxAllowedSize).ContinueWith(done => {
+                    Texture2D screenTex = new Texture2D(512, 512);
+                    screenTex.LoadImage(done.Result);
+                    screenTex.Apply();
+                    LevelQuery newLevel = new LevelQuery {
+                        lName = levelName,
+                        filePath = filePath,
+                        picPath = picPath,
+                        screenshot = screenTex
+                    };
+                    levelsHolder.Add(newLevel);
+                    onMyFilesCached();
+                });
+            }
+        });
+    }
+
+    public static void QueryAllLevels()
+    {
+        if (levelsHolder == null) levelsHolder = new List<LevelQuery>();
+        else levelsHolder.Clear();
+
+        const long maxAllowedSize = 4 * 1024 * 1024;
+
+        FirebaseDatabase.DefaultInstance.RootReference.Child("User_Levels").GetValueAsync().ContinueWith(x => {
+
+            foreach (DataSnapshot item in x.Result.Children)
+            {
+                if (user == null || user.DisplayName != item.Key)
+                {
+                    string author = item.Key;
+                    Debug.Log(author);
+                    foreach (DataSnapshot level in item.Children)
+                    {
+                        Debug.Log(level.Key);
+                        string lName = level.Key;
+                        string fPath = level.Child("File_Path").Value.ToString();
+                        string pPath = level.Child("Picture_Path").Value.ToString();
+                        root.Child(pPath).GetBytesAsync(maxAllowedSize).ContinueWith(done => {
+                            Texture2D screenShot = new Texture2D(512, 512);
+                            screenShot.LoadImage(done.Result);
+                            screenShot.Apply();
+                            LevelQuery newLevel = new LevelQuery
+                            {
+                                levelAuthor = author,
+                                filePath = fPath,
+                                picPath = pPath,
+                                screenshot = screenShot,
+                                lName = lName
+                            };
+                            levelsHolder.Add(newLevel);
+                            onUserFilesCached();
+                        });
+                    }
+                }
+            }
+        });
+
+
     }
 }
 
