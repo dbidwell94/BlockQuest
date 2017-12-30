@@ -350,10 +350,11 @@ public class LevelCreator : MonoBehaviour {
             goalsToSave.Add(goal);
         }
         saveDialog.SetActive(false);
+        string formattedLevelName = levelName.text.Replace(' ', '_');
         XMLDataManager toSave = new XMLDataManager
         {
             bots = botsToSave.ToArray(), goals = goalsToSave.ToArray(), walls = wallsToSave.ToArray(),
-            lName = levelName.text, player = playerToSave, timesPlayed = 0
+            lName = formattedLevelName, player = playerToSave, timesPlayed = 0
         };
         XMLDataLoaderSaver.Save(toSave, levelScreenshot);
         LevelManager.RebuildLists();

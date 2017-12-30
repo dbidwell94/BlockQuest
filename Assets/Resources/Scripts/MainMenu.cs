@@ -26,7 +26,7 @@ public class MainMenu : MonoBehaviour {
     public Button quitGame;
     private List<GameObject> currentLevelButtons, currentMyCloudLevels, currentUserCloudLevels;
     private bool myLevels, userLevels;
-    private FirebaseManager.LevelQuery cloudLevelSelected;
+    private LevelQuery cloudLevelSelected;
 
 	// Use this for initialization
 	void Start () {
@@ -127,40 +127,46 @@ public class MainMenu : MonoBehaviour {
 
     public void LoadMyLevels()
     {
-        if (currentMyCloudLevels == null) currentMyCloudLevels = new List<GameObject>();
-        GameObject newCloudObject = Instantiate(cloudButton);
-        newCloudObject.GetComponentInChildren<Button>().onClick.AddListener(delegate {
-            cloudDataObject.SetActive(false);
-            cloudLevelOptions.SetActive(true);
-            cloudLevelSelected = FirebaseManager.levelsHolder[FirebaseManager.levelsHolder.Count - 1];
-            ShowCloudLevelOptions(cloudLevelSelected, true);
-        });
-        RectTransform cloudTrans = newCloudObject.GetComponent<RectTransform>();
-        newCloudObject.transform.SetParent(cloudDataHolder);
-        newCloudObject.transform.Find("LevelName").GetComponent<Text>().text = FirebaseManager.levelsHolder[FirebaseManager.levelsHolder.Count - 1].lName;
-        newCloudObject.transform.Find("AuthorName").GetComponent<Text>().text = FirebaseManager.levelsHolder[FirebaseManager.levelsHolder.Count - 1].levelAuthor;
-        newCloudObject.transform.Find("Image").GetComponent<Image>().sprite = Sprite.Create(FirebaseManager.levelsHolder[FirebaseManager.levelsHolder.Count - 1].screenshot, new Rect(0, 0, 512, 512), new Vector2());
-        cloudTrans.localScale = new Vector3(1, 1, 1);
-        currentMyCloudLevels.Add(newCloudObject);
+        currentMyCloudLevels = new List<GameObject>();
+        foreach (LevelQuery level in FirebaseManager.levelsHolder)
+        {
+            GameObject newCloudObject = Instantiate(cloudButton);
+            newCloudObject.GetComponentInChildren<Button>().onClick.AddListener(delegate {
+                cloudDataObject.SetActive(false);
+                cloudLevelOptions.SetActive(true);
+                cloudLevelSelected = level;
+                ShowCloudLevelOptions(cloudLevelSelected, true);
+            });
+            RectTransform cloudTrans = newCloudObject.GetComponent<RectTransform>();
+            newCloudObject.transform.SetParent(cloudDataHolder);
+            newCloudObject.transform.Find("LevelName").GetComponent<Text>().text = level.lName;
+            newCloudObject.transform.Find("AuthorName").GetComponent<Text>().text = level.levelAuthor;
+            newCloudObject.transform.Find("Image").GetComponent<Image>().sprite = Sprite.Create(level.screenshot, new Rect(0, 0, 512, 512), new Vector2());
+            cloudTrans.localScale = new Vector3(1, 1, 1);
+            currentMyCloudLevels.Add(newCloudObject);
+        }       
     }
 
     public void LoadUserLevels()
     {
-        if (currentUserCloudLevels == null) currentUserCloudLevels = new List<GameObject>();
-        GameObject newCloudObject = Instantiate(cloudButton);
-        newCloudObject.GetComponentInChildren<Button>().onClick.AddListener(delegate {
-            cloudDataObject.SetActive(false);
-            cloudLevelOptions.SetActive(true);
-            cloudLevelSelected = FirebaseManager.levelsHolder[FirebaseManager.levelsHolder.Count - 1];
-            ShowCloudLevelOptions(cloudLevelSelected, false);
-        });
-        RectTransform cloudTrans = newCloudObject.GetComponent<RectTransform>();
-        newCloudObject.transform.SetParent(cloudDataHolder);
-        newCloudObject.transform.Find("LevelName").GetComponent<Text>().text = FirebaseManager.levelsHolder[FirebaseManager.levelsHolder.Count - 1].lName;
-        newCloudObject.transform.Find("AuthorName").GetComponent<Text>().text = FirebaseManager.levelsHolder[FirebaseManager.levelsHolder.Count - 1].levelAuthor;
-        newCloudObject.transform.Find("Image").GetComponent<Image>().sprite = Sprite.Create(FirebaseManager.levelsHolder[FirebaseManager.levelsHolder.Count - 1].screenshot, new Rect(0, 0, 512, 512), new Vector2());
-        cloudTrans.localScale = new Vector3(1, 1, 1);
-        currentUserCloudLevels.Add(newCloudObject);
+        currentUserCloudLevels = new List<GameObject>();
+        foreach (LevelQuery level in FirebaseManager.levelsHolder)
+        {
+            GameObject newCloudObject = Instantiate(cloudButton);
+            newCloudObject.GetComponentInChildren<Button>().onClick.AddListener(delegate {
+                cloudDataObject.SetActive(false);
+                cloudLevelOptions.SetActive(true);
+                cloudLevelSelected = level;
+                ShowCloudLevelOptions(cloudLevelSelected, false);
+            });
+            RectTransform cloudTrans = newCloudObject.GetComponent<RectTransform>();
+            newCloudObject.transform.SetParent(cloudDataHolder);
+            newCloudObject.transform.Find("LevelName").GetComponent<Text>().text = level.lName;
+            newCloudObject.transform.Find("AuthorName").GetComponent<Text>().text = level.levelAuthor;
+            newCloudObject.transform.Find("Image").GetComponent<Image>().sprite = Sprite.Create(level.screenshot, new Rect(0, 0, 512, 512), new Vector2());
+            cloudTrans.localScale = new Vector3(1, 1, 1);
+            currentUserCloudLevels.Add(newCloudObject);
+        }
     }
 
     public void CreateLevel()
@@ -277,7 +283,7 @@ public class MainMenu : MonoBehaviour {
         }
     }
 
-    void ShowCloudLevelOptions(FirebaseManager.LevelQuery level, bool isMyLevel)
+    void ShowCloudLevelOptions(LevelQuery level, bool isMyLevel)
     {
         cloudLevelOptions.transform.GetChild(0).GetComponent<Text>().text = level.lName;
         cloudLevelOptions.transform.GetChild(1).GetComponent<Text>().text = level.levelAuthor;

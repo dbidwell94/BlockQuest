@@ -126,6 +126,8 @@ public static class FirebaseManager
     // IMPORTANT!! Modify this variable according to dev or user build!!
     public static string saveLoc = "User_Levels";
 
+    private static object myLock = new object();
+
     public static float filesToDownload;
     public static float filesDownloaded;
     public static float fileRatio = 0f;
@@ -136,7 +138,10 @@ public static class FirebaseManager
     public static fileHandler onMyFilesCached;
     public static fileHandler onUserFilesCached;
 
-    public static List<LevelQuery> levelsHolder;
+    private static List<LevelQuery> tempLevels;
+    private static int levelsToDownload = 0;
+    private static int levelsDownloaded = 0;
+    public static LevelQuery[] levelsHolder;
 
     private static FirebaseAuth auth = FirebaseAuth.DefaultInstance;
     public static FirebaseUser user;
@@ -159,14 +164,7 @@ public static class FirebaseManager
             picturePath = pic;
         }
     }
-    public struct LevelQuery
-    {
-        public Texture2D screenshot;
-        public string filePath;
-        public string picPath;
-        public string lName;
-        public string levelAuthor;
-    }
+
     private static FirebaseStorage storage = FirebaseStorage.GetInstance("gs://blockquest-a1e16.appspot.com");
     private static StorageReference root = storage.GetReferenceFromUrl("gs://blockquest-a1e16.appspot.com");
     public static FirebaseDatabase instance;
@@ -330,17 +328,18 @@ public static class FirebaseManager
 
     public static void QueryMyLevels()
     {
-        if (levelsHolder == null)
-        {
-            levelsHolder = new List<LevelQuery>();
-        }
-        else levelsHolder.Clear();
-
+        levelsHolder = null;
+        tempLevels = new List<LevelQuery>();
+        levelsToDownload = 0;
         const long maxAllowedSize = 4 * 1024 * 1024;
 
         FirebaseDatabase.DefaultInstance.RootReference.Child("User_Levels").Child(FirebaseManager.FormattedUserName).GetValueAsync().ContinueWith(x => {
             foreach (DataSnapshot child in x.Result.Children)
             {
+                lock(myLock)
+                {
+                    levelsToDownload++;
+                }               
                 string levelName = child.Key;
                 string filePath = child.Child("File_Path").Value.ToString();
                 string picPath = child.Child("Picture_Path").Value.ToString();
@@ -353,10 +352,18 @@ public static class FirebaseManager
                         filePath = filePath,
                         picPath = picPath,
                         screenshot = screenTex,
-                        levelAuthor = FirebaseManager.FormattedUserName
+                        levelAuthor = FormattedUserName
                     };
-                    levelsHolder.Add(newLevel);
-                    onMyFilesCached();
+                    lock (myLock)
+                    {
+                        tempLevels.Add(newLevel);
+                        levelsToDownload--;
+                        if (levelsToDownload <= 0)
+                        {
+                            levelsHolder = tempLevels.ToArray();
+                            onMyFilesCached();
+                        }
+                    }
                 });
             }
         });
@@ -364,8 +371,10 @@ public static class FirebaseManager
 
     public static void QueryAllLevels()
     {
-        if (levelsHolder == null) levelsHolder = new List<LevelQuery>();
-        else levelsHolder.Clear();
+        levelsToDownload = 0;
+        levelsDownloaded = 0;
+        tempLevels = new List<LevelQuery>();
+        levelsHolder = null;
 
         const long maxAllowedSize = 4 * 1024 * 1024;
 
@@ -376,10 +385,12 @@ public static class FirebaseManager
                 if (user == null || FormattedUserName != item.Key)
                 {
                     string author = item.Key;
-                    Debug.Log(author);
                     foreach (DataSnapshot level in item.Children)
                     {
-                        Debug.Log(level.Key);
+                        lock (myLock)
+                        {
+                            levelsToDownload++;
+                        }                                            
                         string lName = level.Key;
                         string fPath = level.Child("File_Path").Value.ToString();
                         string pPath = level.Child("Picture_Path").Value.ToString();
@@ -395,8 +406,16 @@ public static class FirebaseManager
                                 screenshot = screenShot,
                                 lName = lName
                             };
-                            levelsHolder.Add(newLevel);
-                            onUserFilesCached();
+                            lock (myLock)
+                            {
+                                levelsToDownload--;
+                                tempLevels.Add(newLevel);
+                                if (levelsToDownload <= 0)
+                                {
+                                    levelsHolder = tempLevels.ToArray();
+                                    onUserFilesCached();
+                                }
+                            }                           
                         });
                     }
                 }
@@ -432,4 +451,13 @@ public class LevelData
 {
     [XmlElement("Changed_Time")]
     public DateTime timeChanged;
+}
+
+public class LevelQuery
+{
+    public Texture2D screenshot;
+    public string filePath;
+    public string picPath;
+    public string lName;
+    public string levelAuthor;
 }

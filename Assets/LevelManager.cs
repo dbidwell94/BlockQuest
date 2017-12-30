@@ -65,7 +65,6 @@ public static class LevelManager {
                 {
                     if (!author.Contains(userName))
                     {
-                        Debug.Log("true");
                         foreach (string userLevel in Directory.GetDirectories(author))
                         {
                             string[] picLocation = Directory.GetFiles(userLevel, "*.png");
@@ -81,7 +80,6 @@ public static class LevelManager {
                 }
 
             }
-            Debug.Log(UsersLevels.Count);
             OnLevelsChanged();
         }
         catch (Exception)
